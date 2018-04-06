@@ -1,0 +1,155 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{0C7548BA-A597-488A-8ADD-2F628BE691D6}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ALE.ETLToolbox</RootNamespace>
+    <AssemblyName>ETLToolbox</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CsvHelper, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
+      <HintPath>..\packages\CsvHelper.2.16.3.0\lib\net45\CsvHelper.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libs\Microsoft.AnalysisServices.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libs\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Core, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libs\Microsoft.AnalysisServices.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.ConnectionInfo, Version=13.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libs\Microsoft.SqlServer.ConnectionInfo.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Smo, Version=13.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libs\Microsoft.SqlServer.Smo.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NLog.4.4.13\lib\net45\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Threading.Tasks.Dataflow, Version=4.5.24.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Tpl.Dataflow.4.5.24\lib\portable-net45+win8+wpa81\System.Threading.Tasks.Dataflow.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Definitions\Logging\LogEntry.cs" />
+    <Compile Include="Helper\StringExtension.cs" />
+    <Compile Include="Toolbox\ConnectionManager\AdomdConnectionManager.cs" />
+    <Compile Include="Toolbox\ConnectionManager\ASConnectionManager.cs" />
+    <Compile Include="Toolbox\ConnectionManager\FileConnectionManager.cs" />
+    <Compile Include="Definitions\ConnectionManager\ICubeConnectionManager.cs" />
+    <Compile Include="Definitions\ConnectionManager\IDbConnectionManager.cs" />
+    <Compile Include="Definitions\ConnectionManager\IConnectionManager.cs" />
+    <Compile Include="Toolbox\ConnectionManager\SMOConnectionManager.cs" />
+    <Compile Include="Definitions\ConnectionManager\DbConnectionManager.cs" />
+    <Compile Include="Toolbox\ConnectionManager\SqlConnectionManager.cs" />
+    <Compile Include="Definitions\DataFlow\DBDestination.cs" />
+    <Compile Include="Definitions\DataFlow\CSVSource.cs" />
+    <Compile Include="Definitions\DataFlow\InMemoryColumn.cs" />
+    <Compile Include="Definitions\DataFlow\InMemoryTable.cs" />
+    <Compile Include="Definitions\Database\ITableColumn.cs" />
+    <Compile Include="Definitions\Extensions\ExtensionFile.cs" />
+    <Compile Include="Definitions\Extensions\ExtensionFileLoader.cs" />
+    <Compile Include="Helper\HashHelper.cs" />
+    <Compile Include="Helper\RuntimePolicyHelper.cs" />
+    <Compile Include="Definitions\Database\TableColumn.cs" />
+    <Compile Include="Toolbox\ControlFlow\Package.cs" />
+    <Compile Include="Toolbox\Database\CleanUpSchemaTask.cs" />
+    <Compile Include="Toolbox\Database\CreateIndexTask.cs" />
+    <Compile Include="Toolbox\Database\CalculateDatabaseHashTask.cs" />
+    <Compile Include="Toolbox\Database\CreateTableTask.cs" />
+    <Compile Include="Toolbox\Database\CRUDViewTask.cs" />
+    <Compile Include="Toolbox\Database\RestoreDatabaseTask.cs" />
+    <Compile Include="Toolbox\Database\DropDatabaseTask.cs" />
+    <Compile Include="Toolbox\Database\CreateDatabaseTask.cs" />
+    <Compile Include="Toolbox\Database\AddFileGroupTask.cs" />
+    <Compile Include="Toolbox\Database\GetDatabaseListTask.cs" />
+    <Compile Include="Toolbox\Logging\AbortLoadProcessTask.cs" />
+    <Compile Include="Definitions\Tasks\DbTask.cs" />
+    <Compile Include="Toolbox\Logging\GetLoadProcessAsJSONTask.cs" />
+    <Compile Include="Toolbox\Logging\ReadLogTableTask.cs" />
+    <Compile Include="Toolbox\Logging\GetLogAsJSONTask.cs" />
+    <Compile Include="Toolbox\Logging\RemoveLogTablesTask.cs" />
+    <Compile Include="Toolbox\Logging\LogTask.cs" />
+    <Compile Include="Toolbox\Logging\CleanUpLogTask.cs" />
+    <Compile Include="Toolbox\Logging\TransferCompletedForLoadProcessTask.cs" />
+    <Compile Include="Definitions\Tasks\GenericTask.cs" />
+    <Compile Include="Definitions\Tasks\ITask.cs" />
+    <Compile Include="Definitions\Logging\LoadProcess.cs" />
+    <Compile Include="NLog\ETLLogLayoutRenderer.cs" />
+    <Compile Include="Definitions\General\ConnectionString.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Definitions\Database\ProcedureParameter.cs" />
+    <Compile Include="Helper\DataTypeConverter.cs" />
+    <Compile Include="Helper\SqlHelper.cs" />
+    <Compile Include="Toolbox\ControlFlow\ControlFlow.cs" />
+    <Compile Include="Toolbox\ControlFlow\CustomTask.cs" />
+    <Compile Include="Toolbox\DataFlow\DataFlowTask.cs" />
+    <Compile Include="Toolbox\Cube\DropCubeTask.cs" />
+    <Compile Include="Toolbox\Cube\ProcessCubeTask.cs" />
+    <Compile Include="Toolbox\Database\RowCountTask.cs" />
+    <Compile Include="Toolbox\Database\SqlTask.cs" />
+    <Compile Include="Toolbox\Logging\ReadLoadProcessTableTask.cs" />
+    <Compile Include="Toolbox\Logging\EndLoadProcessTask.cs" />
+    <Compile Include="Toolbox\ControlFlow\Sequence.cs" />
+    <Compile Include="Toolbox\Database\CRUDProcedureTask.cs" />
+    <Compile Include="Toolbox\Database\CreateSchemaTask.cs" />
+    <Compile Include="Toolbox\Logging\CreateLogTablesTask.cs" />
+    <Compile Include="Toolbox\Logging\StartLoadProcessTask.cs" />
+    <Compile Include="Toolbox\Database\TruncateTableTask.cs" />
+    <Compile Include="Toolbox\Cube\XmlaTask.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
