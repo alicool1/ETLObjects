@@ -8,29 +8,37 @@ using System.Threading.Tasks.Dataflow;
 
 namespace ALE.ETLToolbox
 {
-    public class DataFlowTask : GenericTask, ITask 
+    public class DataFlowTask<DS> : GenericTask, ITask
+        
     {
+        
         /* ITask Interface */
         public override string TaskType { get; set; } = "DATAFLOW";
         public override string TaskName { get; set; }
 
         /* Public properties */
-        public string FileName { get; set; }
-        public string TableName { get; set; }
+        
+        public string TableName_Target { get; set; }
+
         public int BatchSize { get; set; }        
-        //public ISource<string[]> Source { get; set; }                
-        //public IBatchTransformation<string[], InMemoryTable> BatchTransformation { get; set; }
-        public Func<string[][], InMemoryTable> BatchTransformFunction { get; set; }
-        //public ITransformation<string[], string[]> RowTransformation { get; set; }
-        public Func<string[],string[]> RowTransformFunction { get; set; }
+        //public ISource<DS> Source { get; set; }                
+        //public IBatchTransformation<DS, InMemoryTable> BatchTransformation { get; set; }
+        public Func<DS[], InMemoryTable> BatchTransformFunction { get; set; }
+        //public ITransformation<DS, DS> RowTransformation { get; set; }
+        public Func<DS,DS> RowTransformFunction { get; set; }
 
 
-        public CSVSource Source { get; set; }
+        public IDataFlowSource<DS> DataFlowSource { get; set; }
+
+        public IDataFlowDestination<DS> DataFlowDestination { get; set; }
+
+        public DBSource<DS> DBSource { get; set; }
+        public CSVSource<DS> CSVSource { get; set; }
         public DBDestination Destination { get; set; }
-        BufferBlock<string[]> SourceBufferBlock { get; set; }
-        BatchBlock<string[]> DestinationBatchBlock { get; set; }
-        TransformBlock<string[], string[]> RowTransformBlock { get; set; }
-        TransformBlock<string[][], InMemoryTable> BatchTransformBlock {get;set;}
+        BufferBlock<DS> SourceBufferBlock { get; set; }
+        BatchBlock<DS> DestinationBatchBlock { get; set; }
+        TransformBlock<DS, DS> RowTransformBlock { get; set; }
+        TransformBlock<DS[], InMemoryTable> BatchTransformBlock {get;set;}
         ActionBlock<InMemoryTable> DestinationBlock { get; set; }
 
         NLog.Logger NLogger { get; set; }
@@ -40,31 +48,47 @@ namespace ALE.ETLToolbox
             NLogger = NLog.LogManager.GetLogger("Default");
         }
 
-        public DataFlowTask(string name, string fileName, string tableName, int batchSize, Func<string[], string[]> rowTransformFunction, Func<string[][], InMemoryTable> batchTransformFunction) : this()
-        {          
+        public DataFlowTask(string name, CSVSource<DS> CSVSource, string tableName_Target, int batchSize, Func<DS, DS> rowTransformFunction, Func<DS[], InMemoryTable> batchTransformFunction) : this()
+        {
+            
             TaskName = name;
-            FileName = fileName;
-            TableName = tableName;
+            this.DataFlowSource = CSVSource;
+            TableName_Target = tableName_Target;
             BatchSize = batchSize;
             BatchTransformFunction = batchTransformFunction;
             RowTransformFunction = rowTransformFunction;
         }
-      
-        public override void Execute()
+
+        public DataFlowTask(string name, DBSource<DS> DBSource, IDataFlowDestination<DS> DataFlowDestination, string tableName_Target, int batchSize, Func<DS, DS> rowTransformFunction) : this()
         {
-            SourceBufferBlock = new BufferBlock<string[]>();
-            DestinationBatchBlock = new BatchBlock<string[]>(BatchSize);
-            if (Source == null) Source = new CSVSource(FileName);
-            using (Source) {
-                Source.Open();
-                Destination = new DBDestination() { Connection = DbConnectionManager, TableName = TableName };
+            this.DataFlowSource = DBSource;
+
+            TaskName = name;
+            BatchSize = batchSize;
+            TableName_Target = tableName_Target;
+            RowTransformFunction = rowTransformFunction;
+            this.DataFlowDestination = DataFlowDestination;
+        }
+
+        public void Execute_CSVSource()
+        {
+            SourceBufferBlock = new BufferBlock<DS>();
+            DestinationBatchBlock = new BatchBlock<DS>(BatchSize);
+
+            CSVSource = (CSVSource<DS>)DataFlowSource;
+
+            using (CSVSource)
+            {
+
+                CSVSource.Open();
+                Destination = new DBDestination() { Connection = DbConnectionManager, TableName_Target = TableName_Target };
 
                 NLogger.Info(TaskName, TaskType, "START", TaskHash, ControlFlow.STAGE, ControlFlow.CurrentLoadProcess?.LoadProcessKey);
                 /* Pipeline:
                  * Source -> BufferBlock -> RowTransformation -> BatchBlock -> BatchTransformation -> Destination
                  * */
-                RowTransformBlock = new TransformBlock<string[], string[]>(inp => RowTransformFunction.Invoke(inp));
-                BatchTransformBlock = new TransformBlock<string[][], InMemoryTable>(inp => BatchTransformFunction.Invoke(inp));
+                RowTransformBlock = new TransformBlock<DS, DS>(inp => RowTransformFunction.Invoke(inp));
+                BatchTransformBlock = new TransformBlock<DS[], InMemoryTable>(inp => BatchTransformFunction.Invoke(inp));
                 DestinationBlock = new ActionBlock<InMemoryTable>(outp => Destination.WriteBatch(outp));
 
                 SourceBufferBlock.LinkTo(RowTransformBlock);
@@ -76,15 +100,68 @@ namespace ALE.ETLToolbox
                 DestinationBatchBlock.Completion.ContinueWith(t => { NLogger.Debug($"DestinationBatchBlock DataFlow Completed: {TaskName}", TaskType, "RUN", TaskHash); BatchTransformBlock.Complete(); });
                 BatchTransformBlock.Completion.ContinueWith(t => { NLogger.Debug($"BatchTransformBlock DataFlow Completed: {TaskName}", TaskType, "RUN", TaskHash); DestinationBlock.Complete(); });
 
-                Source.Read(RowTransformBlock);
+                CSVSource.Read(RowTransformBlock);
+
+
                 SourceBufferBlock.Complete();
                 DestinationBlock.Completion.Wait();
 
                 NLogger.Info(TaskName, TaskType, "END", TaskHash, ControlFlow.STAGE, ControlFlow.CurrentLoadProcess?.LoadProcessKey);
             }
-            
         }
 
-        public static void Execute(string name, string fileName, string tableName, int batchSize, Func<string[], string[]> rowTransformFunction, Func<string[][], InMemoryTable> batchTransformFunction) => new DataFlowTask(name, fileName, tableName, batchSize, rowTransformFunction, batchTransformFunction).Execute();  
+        public async void LeseDBSource(ITargetBlock<DS> target)
+        {
+            foreach (DS dataSet in DBSource.EnumerableDataSource)
+            {
+                await target.SendAsync(dataSet);
+            }
+        }
+
+        
+
+        public void Execute_DBSource()
+        { 
+            DBSource = (DBSource<DS>)DataFlowSource;
+            DBSource.Init();
+
+            DataFlowDestination.Init();
+
+            var RowTransformBlock = new TransformBlock<DS, DS>(RowTransformFunction);
+            var bacthBlock = new BatchBlock<DS>(BatchSize);
+            var DataFlowDestinationBlock = new ActionBlock<DS[]>(outp => DataFlowDestination.Insert(outp.ToList<DS>()));
+
+            RowTransformBlock.LinkTo(bacthBlock);
+            bacthBlock.LinkTo(DataFlowDestinationBlock);
+
+            RowTransformBlock.Completion.ContinueWith(t => { bacthBlock.Complete(); });
+            bacthBlock.Completion.ContinueWith(t => { DataFlowDestinationBlock.Complete(); });
+
+            LeseDBSource(RowTransformBlock);
+
+            RowTransformBlock.Complete();
+            DataFlowDestinationBlock.Completion.Wait();
+            RowTransformBlock.Complete();
+
+        }
+
+        public override void Execute()
+        {
+            if (DataFlowSource == null) throw new InvalidOperationException("Die DataFlowSource-Eigenschaft wurde nicht gesetzt.");
+            else if (DataFlowSource.GetType() == typeof(CSVSource<DS>)) Execute_CSVSource();
+            else if (DataFlowSource.GetType() == typeof(DBSource<DS>)) Execute_DBSource();
+            else throw new Exception("unbekannter Quelltyp");
+        }
+
+        public static void Execute(string name, CSVSource<DS> CSVSource, string tableName_Target, int batchSize
+            , Func<DS, DS> rowTransformFunction
+            , Func<DS[], InMemoryTable> batchTransformFunction) => 
+            new DataFlowTask<DS>(name, CSVSource, tableName_Target, batchSize, rowTransformFunction, batchTransformFunction).Execute();
+
+        public static void Execute(string name, DBSource<DS> DBSource, IDataFlowDestination<DS> DataFlowDestination, string tableName_Target, int batchSize
+            , Func<DS, DS> rowTransformFunction) => 
+            new DataFlowTask<DS>(name, DBSource, DataFlowDestination, tableName_Target, batchSize, rowTransformFunction).Execute();
+
+
     }
 }

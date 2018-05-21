@@ -9,7 +9,10 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 namespace ALE.ETLToolbox {
-    public class CSVSource : IDisposable {
+    public class CSVSource<DS> : IDataFlowSource<DS>,IDisposable
+     
+    {
+
 
         public CsvReader CsvReader { get; set; }
         public int SourceCommentRows { get; set; } = 0;
@@ -29,12 +32,17 @@ namespace ALE.ETLToolbox {
         }
         public bool IsHeaderRead => CsvReader.FieldHeaders != null;
         
-        public CSVSource() { }
 
         StreamReader StreamReader { get; set; }
 
         public CSVSource(string fileName) {
             FileName = fileName;
+        }
+
+
+        public void Init()
+        {
+
         }
 
         public void Open() {
@@ -48,14 +56,27 @@ namespace ALE.ETLToolbox {
                 StreamReader.ReadLine();
         }
 
-        public async void Read(ITargetBlock<string[]> target) {
+       
+        public async void Read(ITargetBlock<DS> target) {
             while (CsvReader.Read()) {
                 string[] line = new string[CsvReader.CurrentRecord.Length];
                 for (int idx = 0; idx < CsvReader.CurrentRecord.Length; idx++)
                     line[idx] = CsvReader.GetField(idx);
-                await target.SendAsync(line);
+                DS a = (DS)Convert.ChangeType(line, typeof(DS));
+                await target.SendAsync(a);
             }
         }
+
+
+        public IEnumerable<DS> EnumerableDataSource
+        {
+            get { return _dataReaderToEnumerable; }
+        }
+        public DataReaderToEnumerable<DS>.DataMapping DataMappingMethod { get; set; }
+
+
+        private DataReaderToEnumerable<DS> _dataReaderToEnumerable = new DataReaderToEnumerable<DS>();
+
         private void ConfigureCSVReader() {
             CsvReader.Configuration.Delimiter = Delimiter;
             CsvReader.Configuration.Quote = Quote;

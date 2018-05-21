@@ -39,6 +39,7 @@
       <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -83,9 +84,9 @@
     <Compile Include="Database\TestAddFileGroupTask.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ETLToolbox\ETLToolbox.csproj">
+    <ProjectReference Include="..\ETLToolbox\ETLObjects.csproj">
       <Project>{0c7548ba-a597-488a-8add-2f628be691d6}</Project>
-      <Name>ETLToolbox</Name>
+      <Name>ETLObjects</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

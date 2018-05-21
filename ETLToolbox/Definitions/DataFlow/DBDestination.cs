@@ -8,10 +8,10 @@ namespace ALE.ETLToolbox {
     public class DBDestination {
         public IConnectionManager Connection { get; set; }
 
-        public string TableName { get; set; }
+        public string TableName_Target { get; set; }
 
         public void WriteBatch(InMemoryTable batchData) {
-            new SqlTask($"Execute Bulk insert into {TableName}") { ConnectionManager = Connection }.BulkInsert(batchData, batchData.ColumnMapping, TableName);
+            new SqlTask($"Execute Bulk insert into {TableName_Target}") { ConnectionManager = Connection }.BulkInsert(batchData, batchData.ColumnMapping, TableName_Target);
         }
     }
 
