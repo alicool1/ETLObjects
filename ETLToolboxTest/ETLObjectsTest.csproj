@@ -66,6 +66,8 @@
     <Compile Include="Database\TestCreateIndexTask.cs" />
     <Compile Include="Database\TestCalculateDatabaseHashTask.cs" />
     <Compile Include="Database\TestParallelProcessing.cs" />
+    <Compile Include="DataFlow\TestDataFlowTask3.cs" />
+    <Compile Include="DataFlow\TestDataFlowTask2.cs" />
     <Compile Include="Logging\TestGetLoadProcessAsJSONTask.cs" />
     <Compile Include="Logging\TestETLLogWithDemo.cs" />
     <Compile Include="Logging\TestLoadProcessLog.cs" />
