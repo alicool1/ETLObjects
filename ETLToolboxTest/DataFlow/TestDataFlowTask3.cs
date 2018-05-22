@@ -208,6 +208,14 @@ end
             DataFlowTask<Datensatz>.Execute("Test dataflow task", DBSource, Ziel_Schreibe, ZielTabelle, 10000, MaxDegreeOfParallelism, RowTransformationDB);
             Debug.WriteLine("Laufzeit in ms: {0}", s.ElapsedMilliseconds);
 
+            MaxDegreeOfParallelism = 5;
+            SqlTask.ExecuteNonQuery("truncate Zieltabelle", string.Format("truncate table {0}", ZielTabelle));
+            Debug.WriteLine("Start Laufzeittest MaxDegreeOfParallelism {0} ... ", MaxDegreeOfParallelism);
+            s = Stopwatch.StartNew();
+            DataFlowTask<Datensatz>.Execute("Test dataflow task", DBSource, Ziel_Schreibe, ZielTabelle, 10000, MaxDegreeOfParallelism, RowTransformationDB);
+            Debug.WriteLine("Laufzeit in ms: {0}", s.ElapsedMilliseconds);
+
+
             MaxDegreeOfParallelism = 10;
             SqlTask.ExecuteNonQuery("truncate Zieltabelle", string.Format("truncate table {0}", ZielTabelle));
             Debug.WriteLine("Start Laufzeittest MaxDegreeOfParallelism {0} ... ", MaxDegreeOfParallelism);
@@ -215,13 +223,7 @@ end
             DataFlowTask<Datensatz>.Execute("Test dataflow task", DBSource, Ziel_Schreibe, ZielTabelle, 10000, MaxDegreeOfParallelism, RowTransformationDB);
             Debug.WriteLine("Laufzeit in ms: {0}", s.ElapsedMilliseconds);
 
-            MaxDegreeOfParallelism = 20;
-            SqlTask.ExecuteNonQuery("truncate Zieltabelle", string.Format("truncate table {0}", ZielTabelle));
-            Debug.WriteLine("Start Laufzeittest MaxDegreeOfParallelism {0} ... ", MaxDegreeOfParallelism);
-            s = Stopwatch.StartNew();
-            DataFlowTask<Datensatz>.Execute("Test dataflow task", DBSource, Ziel_Schreibe, ZielTabelle, 10000, MaxDegreeOfParallelism, RowTransformationDB);
-            Debug.WriteLine("Laufzeit in ms: {0}", s.ElapsedMilliseconds);
-
+            
 
             Assert.AreEqual(Anzahl_je_Faktor * Anzahl_Faktoren, SqlTask.ExecuteScalar<int>("Check staging table", string.Format("select count(*) from {0}", QuellTabelle)));
 
