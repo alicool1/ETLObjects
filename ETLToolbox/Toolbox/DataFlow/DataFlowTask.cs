@@ -48,6 +48,8 @@ namespace ALE.ETLToolbox
             NLogger = NLog.LogManager.GetLogger("Default");
         }
 
+        int MaxDegreeOfParallelism = 1;
+
         public DataFlowTask(string name, CSVSource<DS> CSVSource, string tableName_Target, int batchSize, Func<DS, DS> rowTransformFunction, Func<DS[], InMemoryTable> batchTransformFunction) : this()
         {
             
@@ -59,10 +61,10 @@ namespace ALE.ETLToolbox
             RowTransformFunction = rowTransformFunction;
         }
 
-        public DataFlowTask(string name, DBSource<DS> DBSource, IDataFlowDestination<DS> DataFlowDestination, string tableName_Target, int batchSize, Func<DS, DS> rowTransformFunction) : this()
+        public DataFlowTask(string name, DBSource<DS> DBSource, IDataFlowDestination<DS> DataFlowDestination, string tableName_Target, int batchSize, int MaxDegreeOfParallelism ,Func<DS, DS> rowTransformFunction) : this()
         {
             this.DataFlowSource = DBSource;
-
+            this.MaxDegreeOfParallelism = MaxDegreeOfParallelism;
             TaskName = name;
             BatchSize = batchSize;
             TableName_Target = tableName_Target;
@@ -127,7 +129,10 @@ namespace ALE.ETLToolbox
 
             DataFlowDestination.Init();
 
-            var RowTransformBlock = new TransformBlock<DS, DS>(RowTransformFunction);
+            var RowTransformBlock = new TransformBlock<DS, DS>(RowTransformFunction
+                , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
+
+
             var bacthBlock = new BatchBlock<DS>(BatchSize);
             var DataFlowDestinationBlock = new ActionBlock<DS[]>(outp => DataFlowDestination.Insert(outp.ToList<DS>()));
 
@@ -158,9 +163,9 @@ namespace ALE.ETLToolbox
             , Func<DS[], InMemoryTable> batchTransformFunction) => 
             new DataFlowTask<DS>(name, CSVSource, tableName_Target, batchSize, rowTransformFunction, batchTransformFunction).Execute();
 
-        public static void Execute(string name, DBSource<DS> DBSource, IDataFlowDestination<DS> DataFlowDestination, string tableName_Target, int batchSize
+        public static void Execute(string name, DBSource<DS> DBSource, IDataFlowDestination<DS> DataFlowDestination, string tableName_Target, int batchSize, int MaxDegreeOfParallelism
             , Func<DS, DS> rowTransformFunction) => 
-            new DataFlowTask<DS>(name, DBSource, DataFlowDestination, tableName_Target, batchSize, rowTransformFunction).Execute();
+            new DataFlowTask<DS>(name, DBSource, DataFlowDestination, tableName_Target, batchSize, MaxDegreeOfParallelism, rowTransformFunction).Execute();
 
 
     }

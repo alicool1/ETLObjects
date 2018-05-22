@@ -79,7 +79,7 @@ namespace ALE.ETLToolboxTest.DataFlow
             Ziel_Schreibe.ObjectMappingMethod = WriterAdapter.Fill;
             Ziel_Schreibe.MaxBufferSize = 1000;
 
-            DataFlowTask<Datensatz>.Execute("Test dataflow task", DBSource, Ziel_Schreibe, ZielTabelle, 10000, RowTransformationDB);
+            DataFlowTask<Datensatz>.Execute("Test dataflow task", DBSource, Ziel_Schreibe, ZielTabelle, 10000,1, RowTransformationDB);
             Assert.AreEqual(4, SqlTask.ExecuteScalar<int>("Check staging table", string.Format("select count(*) from {0}", ZielTabelle)));
         }
 
