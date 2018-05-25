@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class LogTask : GenericTask, ITask {
         /* ITask Interface */
         public override string TaskType { get; set; } = "LOG";

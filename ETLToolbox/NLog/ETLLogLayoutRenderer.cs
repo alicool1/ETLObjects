@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NLog;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     [LayoutRenderer("etllog")]
     public class ETLLogLayoutRenderer : LayoutRenderer {
         [DefaultParameter]

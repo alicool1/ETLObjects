@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class TableColumn : ITableColumn {
         public string Name { get; set; }
         public string DataType { get; set; }

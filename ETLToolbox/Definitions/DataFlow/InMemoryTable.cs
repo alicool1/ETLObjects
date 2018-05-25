@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class InMemoryTable : IDataReader, IDisposable {
         public int? EstimatedBatchSize { get; set; }
         public DataColumnMappingCollection ColumnMapping {

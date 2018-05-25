@@ -1,4 +1,4 @@
-﻿using ALE.ETLToolbox;
+﻿using ETLObjects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ALE.ETLToolboxTest
+namespace ETLObjectsTest
 {
     public static class TestHelper
     {

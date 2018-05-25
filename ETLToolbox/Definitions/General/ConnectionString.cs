@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class ConnectionString {
         static string PATTERNBEGIN = $@"(.*)(";
         static string PATTERNEND = $@"\s*=\s*)(.*?)(;|$)(.*)";

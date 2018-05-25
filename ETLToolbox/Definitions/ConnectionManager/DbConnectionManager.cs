@@ -5,7 +5,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public abstract class DbConnectionManager<Connection, Command> : IDisposable, IDbConnectionManager
         where Connection : class, IDbConnection, new()
         where Command : class, IDbCommand, new() {

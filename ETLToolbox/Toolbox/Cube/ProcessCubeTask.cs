@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using System.IO;
 
-namespace ALE.ETLToolbox
+namespace ETLObjects
 {
     public class ProcessCubeTask : GenericTask, ITask
     {

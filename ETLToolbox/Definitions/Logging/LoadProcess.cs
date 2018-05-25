@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class LoadProcess {
         public int? LoadProcessKey { get; set; }
         public DateTime StartDate { get; set; }

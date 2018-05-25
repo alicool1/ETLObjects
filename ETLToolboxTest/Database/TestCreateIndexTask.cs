@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ALE.ETLToolbox;
+using ETLObjects;
 using System.Collections.Generic;
 
-namespace ALE.ETLToolboxTest {
+namespace ETLObjectsTest {
     [TestClass]
     public class TestCreateIndexTask {
         public TestContext TestContext { get; set; }

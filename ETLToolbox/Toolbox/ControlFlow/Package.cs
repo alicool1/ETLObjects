@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class Package : GenericTask, ITask {
         public override string TaskType { get; set; } = "PACKAGE";
         public override string TaskName { get; set; } = "Package";

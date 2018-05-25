@@ -8,7 +8,7 @@ using System.Data.SqlClient;
 using System.Data;
 using CsvHelper;
 
-namespace ALE.ETLToolbox
+namespace ETLObjects
 {
     public class DataReaderToEnumerable<DS> : IEnumerable<DS>
     {

@@ -1,11 +1,11 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ALE.ETLToolbox;
+using ETLObjects;
 using System.Collections.Generic;
 using System.Linq;
 using System.Data;
 
-namespace ALE.ETLToolboxTest {
+namespace ETLObjectsTest {
     [TestClass]
     public class TestDataFlowTask {
         public TestContext TestContext { get; set; }

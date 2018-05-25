@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class AbortLoadProcessTask : GenericTask, ITask {
         /* ITask Interface */
         public override string TaskType { get; set; } = "LOADPROCESS_ABORT";

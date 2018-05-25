@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class CreateTableTask : GenericTask, ITask {
         /* ITask Interface */
         public override string TaskType { get; set; } = "CREATETABLE";

@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public static class HashHelper {
         public static string Encrypt_Char40(string text) {
             if (text != null) {

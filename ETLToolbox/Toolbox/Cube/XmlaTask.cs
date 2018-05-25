@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Data;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class XmlaTask : DbTask {
         public override string TaskType { get; set; } = "XMLA";
         public override string TaskName { get; set; } = "Run some xmla";

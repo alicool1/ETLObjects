@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class ASConnectionManager : ICubeConnectionManager, IDisposable {
         public ConnectionString ConnectionString { get; set; }
         public bool DoParallelProcessing { get; set; } = true;

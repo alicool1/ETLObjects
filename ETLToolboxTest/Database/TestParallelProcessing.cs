@@ -1,10 +1,10 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ALE.ETLToolbox;
+using ETLObjects;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace ALE.ETLToolboxTest {
+namespace ETLObjectsTest {
     [TestClass]
     public class TestParallelProcessing {
         public TestContext TestContext { get; set; }

@@ -7,8 +7,8 @@
     <ProjectGuid>{0C7548BA-A597-488A-8ADD-2F628BE691D6}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ALE.ETLToolbox</RootNamespace>
-    <AssemblyName>ETLToolbox</AssemblyName>
+    <RootNamespace>ETLObjects</RootNamespace>
+    <AssemblyName>ETLObjects</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

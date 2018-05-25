@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using System.Data.SqlClient;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class DBSource<DS> : IDataFlowSource<DS>
     {
 

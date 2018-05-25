@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class CleanUpLogTask : GenericTask, ITask {
         /* ITask Interface */
         public override string TaskType { get; set; } = "CLEANUPLOG";

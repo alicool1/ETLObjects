@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public abstract class GenericTask : ITask {
         public virtual string TaskType { get; set; } = "N/A";
         public virtual string TaskName { get; set; } = "N/A";

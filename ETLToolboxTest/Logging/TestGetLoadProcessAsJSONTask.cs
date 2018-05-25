@@ -1,12 +1,12 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ALE.ETLToolbox;
+using ETLObjects;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 
-namespace ALE.ETLToolboxTest {
+namespace ETLObjectsTest {
     [TestClass]
     public class TestGetLoadProcessAsJSONTask {
         public TestContext TestContext { get; set; }

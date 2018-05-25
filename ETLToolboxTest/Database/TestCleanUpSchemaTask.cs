@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ALE.ETLToolbox;
+using ETLObjects;
 
-namespace ALE.ETLToolboxTest
+namespace ETLObjectsTest
 {
     [TestClass]
     public class TestCleanUpSchemaTask

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class InMemoryColumn : IColumnMapping {
         public System.Type NETDataType => Type.GetType(DataTypeConverter.GetObjectTypeString(DataType));
 

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public abstract class DbTask : GenericTask {
 
         /* Public Properties */

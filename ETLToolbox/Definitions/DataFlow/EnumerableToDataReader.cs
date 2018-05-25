@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 
-namespace ALE.ETLToolbox
+namespace ETLObjects
 {
     public class EnumerableToDataReader<DS> : IDataReader
     {

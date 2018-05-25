@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class GetLoadProcessAsJSONTask : GenericTask, ITask {
         /* ITask Interface */
         public override string TaskType { get; set; } = "LOADPROCESS_GETJSON";

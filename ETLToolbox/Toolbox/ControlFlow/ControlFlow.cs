@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public static class ControlFlow {
         public static string STAGE { get; set; }
 

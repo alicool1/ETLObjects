@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class CleanUpSchemaTask : GenericTask, ITask {
         /* ITask Interface */
         public override string TaskType { get; set; } = "CLEANSCHEMA";

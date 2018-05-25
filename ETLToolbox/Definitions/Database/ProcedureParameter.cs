@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class ProcedureParameter {
         public string Name { get; set; }
         public string DataType { get; set; }

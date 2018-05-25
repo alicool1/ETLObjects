@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class CreateIndexTask: GenericTask, ITask {
         /* ITask Interface */
         public override string TaskType { get; set; } = "CREATEINDEX";

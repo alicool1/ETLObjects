@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     [DebuggerDisplay("#{LogKey} {TaskType} - {TaskAction} {LogDate}")]
     public class LogEntry {
         public int LogKey { get; set; }

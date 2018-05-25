@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class ExtensionFileLoader {
         public const string STAGEXT = "STAGEXT";
         public const string FILESUFFIX = ".sql";

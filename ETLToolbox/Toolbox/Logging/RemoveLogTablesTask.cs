@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class RemoveLogTablesTask : GenericTask, ITask {
         /* ITask Interface */
         public override string TaskType { get; set; } = "REMOVELOG";

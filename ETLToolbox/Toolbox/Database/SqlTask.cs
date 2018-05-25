@@ -6,7 +6,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class SqlTask : DbTask {
         public override string TaskType { get; set; } = "SQL";
         public override string TaskName { get; set; } = "Run some sql";

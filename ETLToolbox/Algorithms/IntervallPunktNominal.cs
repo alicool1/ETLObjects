@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ALE.ETLToolbox
+namespace ETLObjects
 {
     /// <summary>
     /// stellt einen Intervallpunkt dar und wird angewendet auf einer nominalen Skala

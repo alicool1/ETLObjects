@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ALE.ETLToolbox {
+namespace ETLObjects {
     public class RestoreDatabaseTask : GenericTask, ITask {
         /* ITask Interface */
         public override string TaskType { get; set; } = "RESTOREDB";
