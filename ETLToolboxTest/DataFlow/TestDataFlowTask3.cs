@@ -188,14 +188,19 @@ end
                 new TableColumn("F9", "int", allowNulls: true), new TableColumn("F9_calc", "int", allowNulls: true),
                 new TableColumn("F10", "int", allowNulls: true), new TableColumn("F10_calc", "int", allowNulls: true),});
 
+            
+            System.Data.SqlClient.SqlConnectionStringBuilder builder_CurrentDbConnection
+                = new System.Data.SqlClient.SqlConnectionStringBuilder(ControlFlow.CurrentDbConnection.ConnectionString.ToString());
+            string Current_InitialCatalog = builder_CurrentDbConnection.InitialCatalog;
+            string Current_DataSource = builder_CurrentDbConnection.DataSource;
 
             DBSource<Datensatz> DBSource = new DBSource<Datensatz>(
-                ".", "ETLToolbox"
+                Current_DataSource, Current_InitialCatalog
                 , string.Format("select [Key],F1,F2,F3,F4,F5,F6,F7,F8,F9,F10 from {0}", QuellTabelle)
                 );
             DBSource.DataMappingMethod = ReaderAdapter.Read;
 
-            SQLDestination<Datensatz> Ziel_Schreibe = new SQLDestination<Datensatz>(".", "ETLToolbox");
+            SQLDestination<Datensatz> Ziel_Schreibe = new SQLDestination<Datensatz>(Current_DataSource, Current_InitialCatalog);
             Ziel_Schreibe.DestinationTableName = ZielTabelle;
             Ziel_Schreibe.FieldCount = FieldCount;
             Ziel_Schreibe.ObjectMappingMethod = WriterAdapter.Fill;
