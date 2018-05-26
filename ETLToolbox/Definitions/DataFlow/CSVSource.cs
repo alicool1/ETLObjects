@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 namespace ETLObjects {
-    public class CSVSource<DS> : IDataFlowSource<DS>,IDisposable
+    public class CSVSource<DS> : IDataFlowSource<DS>
      
     {
 
@@ -56,7 +56,8 @@ namespace ETLObjects {
                 StreamReader.ReadLine();
         }
 
-       
+
+
         public async void Read(ITargetBlock<DS> target) {
             while (CsvReader.Read()) {
                 string[] line = new string[CsvReader.CurrentRecord.Length];
@@ -111,6 +112,8 @@ namespace ETLObjects {
         public void Dispose() {
             Dispose(true);
         }
+
+       
         #endregion
 
     }

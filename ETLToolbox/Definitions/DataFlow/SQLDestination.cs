@@ -51,7 +51,7 @@ namespace ETLObjects
 
         private EnumerableToDataReader<DS> _enumerableToDataReader = new EnumerableToDataReader<DS>();
 
-        public void Init()
+        public void Open()
         {
             if (string.IsNullOrEmpty(SqlServer)) throw new InvalidOperationException("Fehler: Die SqlServer Eigengschaft wurde nicht gesetzt.");
             if (string.IsNullOrEmpty(InitialCatalog)) throw new InvalidOperationException("Fehler: Die InitialCatalog (SQL Server Datenbank) Eigengschaft wurde nicht gesetzt.");

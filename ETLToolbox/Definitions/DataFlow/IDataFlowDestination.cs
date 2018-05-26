@@ -9,7 +9,7 @@ namespace ETLObjects
     public interface IDataFlowDestination<DS>
     {
         void Insert(List<DS> resultList);
-        void Init();
+        void Open();
 
         int MaxBufferSize { get; }
     }

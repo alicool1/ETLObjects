@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 
 namespace ETLObjects
 {
-    public interface IDataFlowSource<DS>
+    public interface IDataFlowSource<DS> : IDisposable
     {
         IEnumerable<DS> EnumerableDataSource { get; }
 
-        void Init();
+        void Open();
+
+        void Read(ITargetBlock<DS> TargetBlock);
     }
 
     

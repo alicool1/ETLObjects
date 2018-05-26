@@ -32,8 +32,6 @@ namespace ETLObjects
 
         public IDataFlowDestination<DS> DataFlowDestination { get; set; }
 
-        public DBSource<DS> DBSource { get; set; }
-        public CSVSource<DS> CSVSource { get; set; }
         public DBDestination Destination { get; set; }
         BufferBlock<DS> SourceBufferBlock { get; set; }
         BatchBlock<DS> DestinationBatchBlock { get; set; }
@@ -50,7 +48,7 @@ namespace ETLObjects
 
         int MaxDegreeOfParallelism = 1;
 
-        public DataFlowTask(string name, CSVSource<DS> CSVSource, string tableName_Target, int batchSize, Func<DS, DS> rowTransformFunction, Func<DS[], InMemoryTable> batchTransformFunction) : this()
+        public DataFlowTask(string name, IDataFlowSource<DS> CSVSource, string tableName_Target, int batchSize, Func<DS, DS> rowTransformFunction, Func<DS[], InMemoryTable> batchTransformFunction) : this()
         {
             
             TaskName = name;
@@ -61,7 +59,7 @@ namespace ETLObjects
             RowTransformFunction = rowTransformFunction;
         }
 
-        public DataFlowTask(string name, DBSource<DS> DBSource, IDataFlowDestination<DS> DataFlowDestination, string tableName_Target, int batchSize, int MaxDegreeOfParallelism ,Func<DS, DS> rowTransformFunction) : this()
+        public DataFlowTask(string name, IDataFlowSource<DS> DBSource, IDataFlowDestination<DS> DataFlowDestination, string tableName_Target, int batchSize, int MaxDegreeOfParallelism ,Func<DS, DS> rowTransformFunction) : this()
         {
             this.DataFlowSource = DBSource;
             this.MaxDegreeOfParallelism = MaxDegreeOfParallelism;
@@ -77,12 +75,11 @@ namespace ETLObjects
             SourceBufferBlock = new BufferBlock<DS>();
             DestinationBatchBlock = new BatchBlock<DS>(BatchSize);
 
-            CSVSource = (CSVSource<DS>)DataFlowSource;
-
-            using (CSVSource)
+            using (DataFlowSource)
             {
 
-                CSVSource.Open();
+
+                DataFlowSource.Open();
                 Destination = new DBDestination() { Connection = DbConnectionManager, TableName_Target = TableName_Target };
 
                 NLogger.Info(TaskName, TaskType, "START", TaskHash, ControlFlow.STAGE, ControlFlow.CurrentLoadProcess?.LoadProcessKey);
@@ -102,7 +99,7 @@ namespace ETLObjects
                 DestinationBatchBlock.Completion.ContinueWith(t => { NLogger.Debug($"DestinationBatchBlock DataFlow Completed: {TaskName}", TaskType, "RUN", TaskHash); BatchTransformBlock.Complete(); });
                 BatchTransformBlock.Completion.ContinueWith(t => { NLogger.Debug($"BatchTransformBlock DataFlow Completed: {TaskName}", TaskType, "RUN", TaskHash); DestinationBlock.Complete(); });
 
-                CSVSource.Read(RowTransformBlock);
+                DataFlowSource.Read(RowTransformBlock);
 
 
                 SourceBufferBlock.Complete();
@@ -112,22 +109,14 @@ namespace ETLObjects
             }
         }
 
-        public async void LeseDBSource(ITargetBlock<DS> target)
-        {
-            foreach (DS dataSet in DBSource.EnumerableDataSource)
-            {
-                await target.SendAsync(dataSet);
-            }
-        }
-
+        
         
 
         public void Execute_DBSource()
         { 
-            DBSource = (DBSource<DS>)DataFlowSource;
-            DBSource.Init();
 
-            DataFlowDestination.Init();
+            DataFlowSource.Open();
+            DataFlowDestination.Open();
 
             var RowTransformBlock = new TransformBlock<DS, DS>(RowTransformFunction
                 , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
@@ -142,7 +131,7 @@ namespace ETLObjects
             RowTransformBlock.Completion.ContinueWith(t => { bacthBlock.Complete(); });
             bacthBlock.Completion.ContinueWith(t => { DataFlowDestinationBlock.Complete(); });
 
-            LeseDBSource(RowTransformBlock);
+            DataFlowSource.Read(RowTransformBlock);
 
             RowTransformBlock.Complete();
             DataFlowDestinationBlock.Completion.Wait();
