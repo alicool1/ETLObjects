@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2018
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ETLObjects", "ETLToolbox\ETLObjects.csproj", "{0C7548BA-A597-488A-8ADD-2F628BE691D6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ETLObjectsTest", "ETLToolboxTest\ETLObjectsTest.csproj", "{E18C5029-9FA4-4846-828C-1B42D5D18C3C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ETLObjectsDemo", "ETLObjectsDemo\ETLObjectsDemo.csproj", "{3E9D2383-376F-448D-9405-76A3700C4F40}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,8 +23,15 @@ Global
 		{E18C5029-9FA4-4846-828C-1B42D5D18C3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E18C5029-9FA4-4846-828C-1B42D5D18C3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E18C5029-9FA4-4846-828C-1B42D5D18C3C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E9D2383-376F-448D-9405-76A3700C4F40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E9D2383-376F-448D-9405-76A3700C4F40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E9D2383-376F-448D-9405-76A3700C4F40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E9D2383-376F-448D-9405-76A3700C4F40}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2E299BB0-1C1E-45EF-8556-86D72D4593BA}
 	EndGlobalSection
 EndGlobal

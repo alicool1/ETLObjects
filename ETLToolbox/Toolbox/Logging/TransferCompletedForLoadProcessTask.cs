@@ -7,7 +7,7 @@ namespace ETLObjects {
         public override string TaskType { get; set; } = "TRANSFERCOMPLETE";
         public override string TaskName => $"Set transfer completed for {LoadProcessKey}";
         public override void Execute() {
-            new SqlTask(this, Sql).ExecuteNonQuery();            
+            new SqlTask(this, Sql) { DisableLogging = true }.ExecuteNonQuery();            
             var rlp = new ReadLoadProcessTableTask(LoadProcessKey) { TaskType = this.TaskType, TaskHash = this.TaskHash, DisableLogging = true };
             rlp.Execute();
             ControlFlow.CurrentLoadProcess = rlp.LoadProcess;
