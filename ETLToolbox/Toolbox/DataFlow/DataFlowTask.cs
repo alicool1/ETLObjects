@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using System.Data.Common;
+using System.Data;
 
 namespace ETLObjects
 {
@@ -18,13 +20,12 @@ namespace ETLObjects
 
         /* Public properties */
         
-        public string TableName_Target { get; set; }
+
 
         public int BatchSize { get; set; }        
-        //public ISource<DS> Source { get; set; }                
-        //public IBatchTransformation<DS, InMemoryTable> BatchTransformation { get; set; }
+
         public Func<DS[], InMemoryTable> BatchTransformFunction { get; set; }
-        //public ITransformation<DS, DS> RowTransformation { get; set; }
+
         public Func<DS,DS> RowTransformFunction { get; set; }
 
 
@@ -32,7 +33,6 @@ namespace ETLObjects
 
         public IDataFlowDestination<DS> DataFlowDestination { get; set; }
 
-        public DBDestination Destination { get; set; }
         BufferBlock<DS> SourceBufferBlock { get; set; }
         BatchBlock<DS> DestinationBatchBlock { get; set; }
         TransformBlock<DS, DS> RowTransformBlock { get; set; }
@@ -48,24 +48,23 @@ namespace ETLObjects
 
         int MaxDegreeOfParallelism = 1;
 
-        public DataFlowTask(string name, IDataFlowSource<DS> CSVSource, string tableName_Target, int batchSize, Func<DS, DS> rowTransformFunction, Func<DS[], InMemoryTable> batchTransformFunction) : this()
+        public DataFlowTask(string name, IDataFlowSource<DS> DataFlowSource, IDataFlowDestination<DS> DataFlowDestination, int batchSize, Func<DS, DS> rowTransformFunction, Func<DS[], InMemoryTable> batchTransformFunction) : this()
         {
             
             TaskName = name;
-            this.DataFlowSource = CSVSource;
-            TableName_Target = tableName_Target;
+            this.DataFlowSource = DataFlowSource;
             BatchSize = batchSize;
             BatchTransformFunction = batchTransformFunction;
             RowTransformFunction = rowTransformFunction;
+            this.DataFlowDestination = DataFlowDestination;
         }
 
-        public DataFlowTask(string name, IDataFlowSource<DS> DBSource, IDataFlowDestination<DS> DataFlowDestination, string tableName_Target, int batchSize, int MaxDegreeOfParallelism ,Func<DS, DS> rowTransformFunction) : this()
+        public DataFlowTask(string name, IDataFlowSource<DS> DataFlowSource, IDataFlowDestination<DS> DataFlowDestination, int batchSize, int MaxDegreeOfParallelism ,Func<DS, DS> rowTransformFunction) : this()
         {
-            this.DataFlowSource = DBSource;
+            this.DataFlowSource = DataFlowSource;
             this.MaxDegreeOfParallelism = MaxDegreeOfParallelism;
             TaskName = name;
             BatchSize = batchSize;
-            TableName_Target = tableName_Target;
             RowTransformFunction = rowTransformFunction;
             this.DataFlowDestination = DataFlowDestination;
         }
@@ -80,7 +79,7 @@ namespace ETLObjects
 
 
                 DataFlowSource.Open();
-                Destination = new DBDestination() { Connection = DbConnectionManager, TableName_Target = TableName_Target };
+                DataFlowDestination.Open();
 
                 NLogger.Info(TaskName, TaskType, "START", TaskHash, ControlFlow.STAGE, ControlFlow.CurrentLoadProcess?.LoadProcessKey);
                 /* Pipeline:
@@ -88,7 +87,7 @@ namespace ETLObjects
                  * */
                 RowTransformBlock = new TransformBlock<DS, DS>(inp => RowTransformFunction.Invoke(inp));
                 BatchTransformBlock = new TransformBlock<DS[], InMemoryTable>(inp => BatchTransformFunction.Invoke(inp));
-                DestinationBlock = new ActionBlock<InMemoryTable>(outp => Destination.WriteBatch(outp));
+                DestinationBlock = new ActionBlock<InMemoryTable>(outp => DataFlowDestination.WriteBatch(outp));
 
                 SourceBufferBlock.LinkTo(RowTransformBlock);
                 RowTransformBlock.LinkTo(DestinationBatchBlock);
@@ -109,52 +108,48 @@ namespace ETLObjects
             }
         }
 
-        
-        
-
-        public void Execute_DBSource()
-        { 
-
-            DataFlowSource.Open();
-            DataFlowDestination.Open();
-
-            var RowTransformBlock = new TransformBlock<DS, DS>(RowTransformFunction
-                , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
-
-
-            var bacthBlock = new BatchBlock<DS>(BatchSize);
-            var DataFlowDestinationBlock = new ActionBlock<DS[]>(outp => DataFlowDestination.Insert(outp.ToList<DS>()));
-
-            RowTransformBlock.LinkTo(bacthBlock);
-            bacthBlock.LinkTo(DataFlowDestinationBlock);
-
-            RowTransformBlock.Completion.ContinueWith(t => { bacthBlock.Complete(); });
-            bacthBlock.Completion.ContinueWith(t => { DataFlowDestinationBlock.Complete(); });
-
-            DataFlowSource.Read(RowTransformBlock);
-
-            RowTransformBlock.Complete();
-            DataFlowDestinationBlock.Completion.Wait();
-            RowTransformBlock.Complete();
-
-        }
-
         public override void Execute()
         {
-            if (DataFlowSource == null) throw new InvalidOperationException("Die DataFlowSource-Eigenschaft wurde nicht gesetzt.");
-            else if (DataFlowSource.GetType() == typeof(CSVSource<DS>)) Execute_CSVSource();
-            else if (DataFlowSource.GetType() == typeof(DBSource<DS>)) Execute_DBSource();
-            else throw new Exception("unbekannter Quelltyp");
+            if (DataFlowSource == null) throw new InvalidOperationException("DataFlowSource is null.");
+            else if (DataFlowDestination == null) throw new InvalidOperationException("DataFlowDestination is null.");
+
+
+            using (DataFlowSource)
+            {
+                DataFlowSource.Open();
+                DataFlowDestination.Open();
+
+                var RowTransformBlock = new TransformBlock<DS, DS>(RowTransformFunction
+                    , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
+
+
+                var bacthBlock = new BatchBlock<DS>(BatchSize);
+
+                var DataFlowDestinationBlock = new ActionBlock<DS[]>(outp => DataFlowDestination.WriteBatch(outp));
+
+                RowTransformBlock.LinkTo(bacthBlock);
+                bacthBlock.LinkTo(DataFlowDestinationBlock);
+
+                RowTransformBlock.Completion.ContinueWith(t => { bacthBlock.Complete(); });
+                bacthBlock.Completion.ContinueWith(t => { DataFlowDestinationBlock.Complete(); });
+
+                DataFlowSource.Read(RowTransformBlock);
+
+                RowTransformBlock.Complete();
+                DataFlowDestinationBlock.Completion.Wait();
+                RowTransformBlock.Complete();
+            }
         }
 
-        public static void Execute(string name, CSVSource<DS> CSVSource, string tableName_Target, int batchSize
+
+        public static void Execute(string name, IDataFlowSource<DS> DataFlowSource, IDataFlowDestination<DS> DataFlowDestination, int batchSize
             , Func<DS, DS> rowTransformFunction
             , Func<DS[], InMemoryTable> batchTransformFunction) => 
-            new DataFlowTask<DS>(name, CSVSource, tableName_Target, batchSize, rowTransformFunction, batchTransformFunction).Execute();
+            new DataFlowTask<DS>(name, DataFlowSource, DataFlowDestination,batchSize, rowTransformFunction, batchTransformFunction).Execute();
 
-        public static void Execute(string name, DBSource<DS> DBSource, IDataFlowDestination<DS> DataFlowDestination, string tableName_Target, int batchSize, int MaxDegreeOfParallelism
+        public static void Execute(string name, IDataFlowSource<DS> DataFlowSource, IDataFlowDestination<DS> DataFlowDestination, int batchSize, int MaxDegreeOfParallelism
             , Func<DS, DS> rowTransformFunction) => 
-            new DataFlowTask<DS>(name, DBSource, DataFlowDestination, tableName_Target, batchSize, MaxDegreeOfParallelism, rowTransformFunction).Execute();
+            new DataFlowTask<DS>(name, DataFlowSource, DataFlowDestination, batchSize, MaxDegreeOfParallelism, rowTransformFunction).Execute();
 
 
     }

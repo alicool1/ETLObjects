@@ -16,7 +16,7 @@ namespace ETLObjects {
             using (SqlBulkCopy bulkCopy = new SqlBulkCopy(DbConnection, SqlBulkCopyOptions.TableLock, null)) {
                 bulkCopy.BulkCopyTimeout = 0;
                 bulkCopy.DestinationTableName = tableName;
-                foreach (IColumnMapping colMap in columnMapping)
+                if (columnMapping != null) foreach(IColumnMapping colMap in columnMapping)
                     bulkCopy.ColumnMappings.Add(colMap.SourceColumn, colMap.DataSetColumn);
                 bulkCopy.WriteToServer(data);
             }

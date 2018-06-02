@@ -133,7 +133,7 @@ namespace ETLObjectsTest.DataFlow
 
            
             int Anzahl_je_Faktor = 10000;
-            int Anzahl_Faktoren = 50;
+            int Anzahl_Faktoren = 10;
 
             string QuellTabelle = "test.source";
             CreateTableTask.Create(QuellTabelle, new List<TableColumn>() {
@@ -200,24 +200,26 @@ end
                 );
             DBSource.DataMappingMethod = ReaderAdapter.Read;
 
-            SQLDestination<Datensatz> Ziel_Schreibe = new SQLDestination<Datensatz>(Current_DataSource, Current_InitialCatalog);
-            Ziel_Schreibe.DestinationTableName = ZielTabelle;
+
+            DBDestination<Datensatz> Ziel_Schreibe = new DBDestination<Datensatz>();
+            Ziel_Schreibe.TableName_Target = ZielTabelle;
             Ziel_Schreibe.FieldCount = FieldCount;
             Ziel_Schreibe.ObjectMappingMethod = WriterAdapter.Fill;
-            Ziel_Schreibe.MaxBufferSize = 1000;
+            Ziel_Schreibe.Connection = ControlFlow.CurrentDbConnection;
+
 
             int MaxDegreeOfParallelism = 1;
             SqlTask.ExecuteNonQuery("truncate Zieltabelle", string.Format("truncate table {0}", ZielTabelle));
             Debug.WriteLine("Start Laufzeittest MaxDegreeOfParallelism {0} ... ", MaxDegreeOfParallelism);
             Stopwatch s = Stopwatch.StartNew();
-            DataFlowTask<Datensatz>.Execute("Test dataflow task", DBSource, Ziel_Schreibe, ZielTabelle, 10000, MaxDegreeOfParallelism, RowTransformationDB);
+            DataFlowTask<Datensatz>.Execute("Test dataflow task", DBSource, Ziel_Schreibe, 10000, MaxDegreeOfParallelism, RowTransformationDB);
             Debug.WriteLine("Laufzeit in ms: {0}", s.ElapsedMilliseconds);
 
             MaxDegreeOfParallelism = 5;
             SqlTask.ExecuteNonQuery("truncate Zieltabelle", string.Format("truncate table {0}", ZielTabelle));
             Debug.WriteLine("Start Laufzeittest MaxDegreeOfParallelism {0} ... ", MaxDegreeOfParallelism);
             s = Stopwatch.StartNew();
-            DataFlowTask<Datensatz>.Execute("Test dataflow task", DBSource, Ziel_Schreibe, ZielTabelle, 10000, MaxDegreeOfParallelism, RowTransformationDB);
+            DataFlowTask<Datensatz>.Execute("Test dataflow task", DBSource, Ziel_Schreibe, 10000, MaxDegreeOfParallelism, RowTransformationDB);
             Debug.WriteLine("Laufzeit in ms: {0}", s.ElapsedMilliseconds);
 
 
@@ -225,7 +227,7 @@ end
             SqlTask.ExecuteNonQuery("truncate Zieltabelle", string.Format("truncate table {0}", ZielTabelle));
             Debug.WriteLine("Start Laufzeittest MaxDegreeOfParallelism {0} ... ", MaxDegreeOfParallelism);
             s = Stopwatch.StartNew();
-            DataFlowTask<Datensatz>.Execute("Test dataflow task", DBSource, Ziel_Schreibe, ZielTabelle, 10000, MaxDegreeOfParallelism, RowTransformationDB);
+            DataFlowTask<Datensatz>.Execute("Test dataflow task", DBSource, Ziel_Schreibe, 10000, MaxDegreeOfParallelism, RowTransformationDB);
             Debug.WriteLine("Laufzeit in ms: {0}", s.ElapsedMilliseconds);
 
             

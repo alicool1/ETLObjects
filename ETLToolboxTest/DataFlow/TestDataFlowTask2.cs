@@ -4,6 +4,7 @@ using ETLObjects;
 using System.Collections.Generic;
 using System.Linq;
 using System.Data;
+using System.Data.Common;
 
 namespace ETLObjectsTest.DataFlow
 {
@@ -26,7 +27,7 @@ namespace ETLObjectsTest.DataFlow
         public class Datensatz
         {
             public int F1;
-            public int F2;
+            public int F3;
         }
 
         public class ReaderAdapter
@@ -43,27 +44,29 @@ namespace ETLObjectsTest.DataFlow
         {
             public static object[] Fill(Datensatz Datensatz)
             {
-                object[] record = new object[2];
-                record[0] = Datensatz.F1;
-                record[1] = Datensatz.F2;
+                object[] record = new object[4];
+                record[1] = Datensatz.F1;
+                record[3] = Datensatz.F3;
                 return record;
             }
         }
 
         public Datensatz RowTransformationDB(Datensatz row)
         {
-            row.F2 = row.F1 * -1;
+            row.F3 = row.F1 * -1;
             return row;
         }
-
+        TableColumn Ziel_F0 => new TableColumn("F0", "int", isIdentity : true, isPrimaryKey: true, allowNulls : false);
         TableColumn Ziel_F1 => new TableColumn("F1", "int", allowNulls: true);
         TableColumn Ziel_F2 => new TableColumn("F2", "int", allowNulls: true);
+        TableColumn Ziel_F3 => new TableColumn("F3", "int", allowNulls: true);
 
         [TestMethod]
         public void TestDataflowDbToDb()
         {
             string ZielTabelle = "test.Staging3";
-            CreateTableTask.Create(ZielTabelle, new List<TableColumn>() { Ziel_F1, Ziel_F2 });
+            CreateTableTask.Create(ZielTabelle, new List<TableColumn>() { Ziel_F0, Ziel_F1, Ziel_F2, Ziel_F3 });
+
             DBSource<Datensatz> DBSource = new DBSource<Datensatz>(
                 ".", "ETLToolbox"
                 , "SELECT 0 as F1"
@@ -73,13 +76,13 @@ namespace ETLObjectsTest.DataFlow
                 );
             DBSource.DataMappingMethod = ReaderAdapter.Read;
 
-            SQLDestination<Datensatz> Ziel_Schreibe = new SQLDestination<Datensatz>(".", "ETLToolbox");
-            Ziel_Schreibe.DestinationTableName = ZielTabelle;
-            Ziel_Schreibe.FieldCount = 2;
+            DBDestination<Datensatz> Ziel_Schreibe = new DBDestination<Datensatz>();
+            Ziel_Schreibe.TableName_Target = ZielTabelle;
+            Ziel_Schreibe.FieldCount = 4;
             Ziel_Schreibe.ObjectMappingMethod = WriterAdapter.Fill;
-            Ziel_Schreibe.MaxBufferSize = 1000;
+            Ziel_Schreibe.Connection = ControlFlow.CurrentDbConnection;
 
-            DataFlowTask<Datensatz>.Execute("Test dataflow task", DBSource, Ziel_Schreibe, ZielTabelle, 10000,1, RowTransformationDB);
+            DataFlowTask<Datensatz>.Execute("Test dataflow task", DBSource, Ziel_Schreibe, 10000,1, RowTransformationDB);
             Assert.AreEqual(4, SqlTask.ExecuteScalar<int>("Check staging table", string.Format("select count(*) from {0}", ZielTabelle)));
         }
 

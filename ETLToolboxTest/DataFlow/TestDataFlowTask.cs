@@ -42,14 +42,36 @@ namespace ETLObjectsTest {
             return table;
 
         }
+        public class WriterAdapter
+        {
+            public static object[] Fill(string[] Datensatz)
+            {
+                object[] record = new object[4];
+                record[1] = Datensatz[0];
+                record[2] = Datensatz[1];
+                record[3] = Datensatz[2];
+                return record;
+            }
+        }
+
+
         [TestMethod]
         public void TestSimpleDataflow() {
 
             string ZielTabelle = "test.Staging2";
             CreateTableTask.Create(ZielTabelle, new List<TableColumn>() {keyCol, col1, col2, col3});
 
-            CSVSource<string[]> CSVSource = new CSVSource<string[]>("DataFlow/InputData.csv");
-            DataFlowTask<string[]>.Execute("Test dataflow task", CSVSource, ZielTabelle, 3, RowTransformation, BatchTransformation);
+
+            DBDestination<string[]> Ziel_Schreibe = new DBDestination<string[]>();
+            Ziel_Schreibe.TableName_Target = ZielTabelle;
+            Ziel_Schreibe.FieldCount = 4;
+            Ziel_Schreibe.ObjectMappingMethod = WriterAdapter.Fill;
+            Ziel_Schreibe.Connection = ControlFlow.CurrentDbConnection;
+
+            CSVSource<string[]> CSVSource = 
+                new CSVSource<string[]>("DataFlow/InputData.csv");
+
+            DataFlowTask<string[]>.Execute("Test dataflow task", CSVSource, Ziel_Schreibe, 3, RowTransformation, BatchTransformation);
             Assert.AreEqual(4, SqlTask.ExecuteScalar<int>("Check staging table", string.Format("select count(*) from {0}", ZielTabelle)));                        
         }
 

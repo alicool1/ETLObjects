@@ -143,15 +143,8 @@ namespace ETLObjects
 
         private void Fill(object[] values)
         {
-            //if (WriterAdapter == null) throw new NullReferenceException("Die WriterAdapter-Eigenschaft wurde nicht gesetzt!");
-            //if (WriterAdapter.FieldCount != FieldCount) throw new InvalidOperationException("Die Anzahl der Felder im ");
-            //values = WriterAdapter.Fill(CurrentRecord);
-            //_fieldCount = values.Count();
-
-            //if (Values == null) Values = new object[_fieldCount];
-            //Array.Copy(values, Values, _fieldCount);
-
-            if (ObjectMappingMethod == null) throw new NullReferenceException("Die FillMethod-Eigenschaft wurde nicht gesetzt!");
+            if (ObjectMappingMethod == null)
+                throw new NullReferenceException("ObjectMappingMethod is null.");
 
             values = ObjectMappingMethod(CurrentRecord);
             _fieldCount = values.Count();
