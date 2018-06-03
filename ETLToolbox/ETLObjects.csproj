@@ -73,6 +73,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Algorithms\Graph\Edge.cs" />
+    <Compile Include="Algorithms\Graph\Graph.cs" />
+    <Compile Include="Algorithms\Graph\Vertex.cs" />
     <Compile Include="Algorithms\IntervallPunktMetrisch.cs" />
     <Compile Include="Algorithms\IntervallPunktNominal.cs" />
     <Compile Include="Algorithms\IntervallPunktSuche.cs" />
