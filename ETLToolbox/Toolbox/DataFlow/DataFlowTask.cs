@@ -39,6 +39,8 @@ namespace ETLObjects
         TransformBlock<DS[], InMemoryTable> BatchTransformBlock {get;set;}
         ActionBlock<InMemoryTable> DestinationBlock { get; set; }
 
+        public Graph g { get; set; }
+
         NLog.Logger NLogger { get; set; }
 
         public DataFlowTask()
@@ -67,6 +69,38 @@ namespace ETLObjects
             BatchSize = batchSize;
             RowTransformFunction = rowTransformFunction;
             this.DataFlowDestination = DataFlowDestination;
+        }
+
+        public DataFlowTask(string name, int batchSize, int MaxDegreeOfParallelism, Graph g) : this()
+        {
+            
+            this.MaxDegreeOfParallelism = MaxDegreeOfParallelism;
+            this.TaskName = name;
+            this.BatchSize = batchSize;
+            this.g = g;
+
+        }
+
+        public void Execute_Graph()
+        {
+            var sortedgraph = TopoSort.sortGraph(g);
+            
+            foreach (long i in sortedgraph.Keys)
+            {
+                Vertex v_source = g.getVertex(i, null);
+                foreach (Edge e in v_source.edges)
+                {
+                    Vertex v_dest = e.dest;
+                    long key_source = v_source.key;
+                    long key_dest = v_dest.key;
+                    if (v_source.BenutzerObjekt.GetType() == typeof(DBSource<DS>))
+                    {
+                        IDataFlowSource<DS> source = (IDataFlowSource<DS>)v_source.BenutzerObjekt;
+                        
+                    }
+                }
+
+            }
         }
 
         public void Execute_CSVSource()
@@ -110,6 +144,8 @@ namespace ETLObjects
 
         public override void Execute()
         {
+            if (g != null) { Execute_Graph(); return; }
+
             if (DataFlowSource == null) throw new InvalidOperationException("DataFlowSource is null.");
             else if (DataFlowDestination == null) throw new InvalidOperationException("DataFlowDestination is null.");
 
@@ -150,6 +186,9 @@ namespace ETLObjects
         public static void Execute(string name, IDataFlowSource<DS> DataFlowSource, IDataFlowDestination<DS> DataFlowDestination, int batchSize, int MaxDegreeOfParallelism
             , Func<DS, DS> rowTransformFunction) => 
             new DataFlowTask<DS>(name, DataFlowSource, DataFlowDestination, batchSize, MaxDegreeOfParallelism, rowTransformFunction).Execute();
+
+        public static void Execute(string name, int batchSize, int MaxDegreeOfParallelism, Graph g) =>
+            new DataFlowTask<DS>(name, batchSize, MaxDegreeOfParallelism, g).Execute();
 
 
     }

@@ -11,7 +11,7 @@ namespace ETLObjects
     /// </summary>
     public class Vertex : IComparable<Vertex>// wegen Priority-Queue
     {
-        public long name; // Name des Knoten (fix)
+        public long key; // Key des Knoten (fix)
         public List<Edge> edges; // Nachbarn als Kantenliste (fix)
         public int nr; // Knotennummer (errechnet)
         public int indegree; // Eingangsgrad (errechnet)
@@ -32,7 +32,7 @@ namespace ETLObjects
         /// <param name="s"></param>
         public Vertex(long o)
         {
-            name = o; // initialisiere Name des Knoten
+            key = o; // initialisiere Name des Knoten
             edges = new List<Edge>(); // initialisiere Nachbarschaftsliste
         }
 

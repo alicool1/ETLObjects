@@ -82,7 +82,22 @@ namespace ETLObjectsTest.DataFlow
             Ziel_Schreibe.ObjectMappingMethod = WriterAdapter.Fill;
             Ziel_Schreibe.Connection = ControlFlow.CurrentDbConnection;
 
-            DataFlowTask<Datensatz>.Execute("Test dataflow task", DBSource, Ziel_Schreibe, 10000,1, RowTransformationDB);
+            Graph g = new Graph();
+            
+            g.getVertex(0, DBSource);
+            g.getVertex(1, new object());
+            g.getVertex(2, Ziel_Schreibe);
+
+            g.addEdge(0, 1, 0); // connect 0 to 1
+            g.addEdge(1, 2, 0); // connect 1 to 2
+
+
+            //DataFlowTask<Datensatz>.Execute("Test dataflow task", DBSource, Ziel_Schreibe, 10000,1, RowTransformationDB);
+
+            DataFlowTask<Datensatz>.Execute("Test dataflow task", 10000, 1, g);
+
+
+
             Assert.AreEqual(4, SqlTask.ExecuteScalar<int>("Check staging table", string.Format("select count(*) from {0}", ZielTabelle)));
         }
 
