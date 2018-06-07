@@ -83,23 +83,101 @@ namespace ETLObjects
 
         public void Execute_Graph()
         {
-            var sortedgraph = TopoSort.sortGraph(g);
-            
-            foreach (long i in sortedgraph.Keys)
+            // the algorithm for topological sorting is required 
+            // for the chronological order in the DataFlow-Pipeline
+            foreach (long i in TopoSort.sortGraph(g).Keys)
             {
                 Vertex v_source = g.getVertex(i, null);
+                // loop over all edges of v_source 
                 foreach (Edge e in v_source.edges)
                 {
                     Vertex v_dest = e.dest;
-                    long key_source = v_source.key;
-                    long key_dest = v_dest.key;
-                    if (v_source.BenutzerObjekt.GetType() == typeof(DBSource<DS>))
+
+                    // for case that object in vertex is missing
+                    if (v_source.BenutzerObjekte == null || v_source.BenutzerObjekte[0] == null)
                     {
-                        IDataFlowSource<DS> source = (IDataFlowSource<DS>)v_source.BenutzerObjekt;
-                        
+                        #region
+                        throw new Exception(string.Format("Vertex needs any object. For example an IDataFlowSource."));
+                        #endregion
+                    }
+                    // for case that v_source is type of IDataFlowSource
+                    else if (new List<Type>(new Type[] { typeof(CSVSource<DS>), typeof(DBSource<DS>) }).Contains(v_source.BenutzerObjekte[0].GetType()))
+                    {
+                        #region
+                        IDataFlowSource<DS> source = (IDataFlowSource<DS>)v_source.BenutzerObjekte[0];
+                        #endregion
+
+                        // for case that object in vertex is missing
+                        if (v_dest.BenutzerObjekte == null || v_dest.BenutzerObjekte[0] == null)
+                        {
+                            #region
+                            throw new Exception(string.Format("Vertex needs any object. For example DBDestination."));
+                            #endregion
+                        }
+                        // for case that v_source is type of IDataFlowSource
+                        // AND that v_dest is type of RowTransformFunction
+                        else if (v_dest.BenutzerObjekte[0].GetType() == typeof(RowTransformFunction<DS>))
+                        {
+                            #region
+                            IDataFlowTransformation<DS> t = (IDataFlowTransformation<DS>)v_dest.BenutzerObjekte[0];
+                            TransformBlock<DS, DS> t_b = new TransformBlock<DS, DS>(t.rowTransformFunction
+                                , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
+                            v_dest.BenutzerObjekte.Add(t_b);
+                            using (source) { source.Open(); source.Read(t_b); }
+                            #endregion
+                        }
+                        // for case that type is not implemented
+                        else
+                        {
+                            #region
+                            throw new Exception(string.Format("Type {0} is not implemented.", v_dest.BenutzerObjekte[0].GetType()));
+                            #endregion
+                        }
+                    }
+                    // for case that v_source is type of RowTransformFunction
+                    else if (v_source.BenutzerObjekte[0].GetType() == typeof(RowTransformFunction<DS>))
+                    {
+
+                        // for case that v_source is type of RowTransformFunction
+                        // AND that v_dest is type of DBDestination
+                        if (new List<Type>(new Type[] { typeof(DBDestination<DS>) }).Contains(v_dest.BenutzerObjekte[0].GetType()))
+                        {
+                            #region
+                            IDataFlowDestination<DS> dest = (IDataFlowDestination<DS>)v_dest.BenutzerObjekte[0];
+                            //using (dest) // TODO IDisposible
+                            //{
+                            dest.Open();
+
+                            var bacthBlock = new BatchBlock<DS>(BatchSize);
+                            var DataFlowDestinationBlock = new ActionBlock<DS[]>(outp => dest.WriteBatch(outp));
+
+                            TransformBlock<DS, DS> t_b = (TransformBlock<DS,DS>)v_source.BenutzerObjekte[1];
+                            t_b.LinkTo(bacthBlock);
+                            bacthBlock.LinkTo(DataFlowDestinationBlock);
+
+                            t_b.Completion.ContinueWith(t => { bacthBlock.Complete(); });
+                            bacthBlock.Completion.ContinueWith(t => { DataFlowDestinationBlock.Complete(); });
+
+                            t_b.Complete();
+                            DataFlowDestinationBlock.Completion.Wait();
+                            #endregion
+                        }
+                        // for case that type is not implemented
+                        else
+                        {
+                            #region
+                            throw new Exception(string.Format("Type {0} is not implemented.", v_dest.BenutzerObjekte[0].GetType()));
+                            #endregion
+                        }
+                    }
+                    // for case that type is not implemented
+                    else
+                    {
+                        #region
+                        throw new Exception(string.Format("Type {0} is not implemented.", v_source.BenutzerObjekte[0].GetType()));
+                        #endregion
                     }
                 }
-
             }
         }
 
@@ -160,7 +238,6 @@ namespace ETLObjects
 
 
                 var bacthBlock = new BatchBlock<DS>(BatchSize);
-
                 var DataFlowDestinationBlock = new ActionBlock<DS[]>(outp => DataFlowDestination.WriteBatch(outp));
 
                 RowTransformBlock.LinkTo(bacthBlock);
@@ -173,7 +250,7 @@ namespace ETLObjects
 
                 RowTransformBlock.Complete();
                 DataFlowDestinationBlock.Completion.Wait();
-                RowTransformBlock.Complete();
+
             }
         }
 

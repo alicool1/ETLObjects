@@ -82,11 +82,14 @@ namespace ETLObjectsTest.DataFlow
             Ziel_Schreibe.ObjectMappingMethod = WriterAdapter.Fill;
             Ziel_Schreibe.Connection = ControlFlow.CurrentDbConnection;
 
+            RowTransformFunction<Datensatz> trafo1 = new RowTransformFunction<Datensatz>();
+            trafo1.rowTransformFunction = RowTransformationDB;
+
             Graph g = new Graph();
             
-            g.getVertex(0, DBSource);
-            g.getVertex(1, new object());
-            g.getVertex(2, Ziel_Schreibe);
+            g.getVertex(0, new List<object>(new object[] { DBSource }));
+            g.getVertex(1, new List<object>(new object[] { trafo1 }));
+            g.getVertex(2, new List<object>(new object[] { Ziel_Schreibe }));
 
             g.addEdge(0, 1, 0); // connect 0 to 1
             g.addEdge(1, 2, 0); // connect 1 to 2

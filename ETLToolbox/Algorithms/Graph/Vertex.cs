@@ -22,9 +22,9 @@ namespace ETLObjects
         public Boolean istZirkelAnfang; //gibt an, ob Knoten Anfang des Zirkels ist   
 
         /// <summary>
-        /// beliebiges benutzerdefiniertes Objekt
+        /// beliebige benutzerdefinierte Objekte
         /// </summary>
-        public object BenutzerObjekt;
+        public List<object> BenutzerObjekte;
 
         /// <summary>
         /// Konstruktor fuer Knoten

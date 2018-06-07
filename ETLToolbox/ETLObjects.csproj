@@ -85,6 +85,8 @@
     <Compile Include="Definitions\DataFlow\EnumerableToDataReader.cs" />
     <Compile Include="Definitions\DataFlow\IDataFlowDestination.cs" />
     <Compile Include="Definitions\DataFlow\IDataFlowSource.cs" />
+    <Compile Include="Definitions\DataFlow\IDataFlowTransformation.cs" />
+    <Compile Include="Definitions\DataFlow\RowTransformFunction.cs" />
     <Compile Include="Definitions\Logging\LogEntry.cs" />
     <Compile Include="Helper\StringExtension.cs" />
     <Compile Include="Toolbox\ConnectionManager\AdomdConnectionManager.cs" />

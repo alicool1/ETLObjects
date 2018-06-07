@@ -38,6 +38,7 @@ namespace ETLObjects {
         }
         public DataReaderToEnumerable<DS>.DataMapping DataMappingMethod { get; set; }
 
+        public Func<DS, DS> target_transformation { get; set; }
 
         private string _conectionString = "Data Source={0};Initial Catalog={1};Integrated Security=True;Connection Timeout={2}";
         private SqlConnection _con = new SqlConnection();

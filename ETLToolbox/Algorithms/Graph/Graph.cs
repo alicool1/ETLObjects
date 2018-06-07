@@ -59,13 +59,13 @@ namespace ETLObjects
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>
-        public Vertex getVertex(long o, object BenutzerObjekt)
+        public Vertex getVertex(long o, List<object> BenutzerObjekte)
         {
             Vertex v = null; // besorge Knoten zu Knotennamen
             if (!graph.ContainsKey(o))
             { // falls nicht gefunden
                 v = new Vertex(o); // lege neuen Knoten an
-                if (BenutzerObjekt != null) v.BenutzerObjekt = BenutzerObjekt;
+                if (BenutzerObjekte != null) v.BenutzerObjekte = BenutzerObjekte;
                 graph[o] = v; ; // fuege Namen und Knoten in HashMap ein
             }
             else
