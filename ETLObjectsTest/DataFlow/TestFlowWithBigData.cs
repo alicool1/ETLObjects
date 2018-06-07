@@ -9,7 +9,7 @@ using System.Diagnostics;
 namespace ETLObjectsTest.DataFlow
 {
     [TestClass]
-    public class TestDataFlowTask3
+    public class TestFlowWithBigData
     {
         public TestContext TestContext { get; set; }
         public string ConnectionStringParameter => TestContext?.Properties["connectionString"].ToString();
@@ -104,21 +104,21 @@ namespace ETLObjectsTest.DataFlow
         public Datensatz RowTransformationDB(Datensatz row)
         {
  
-            row.F1_calc = IntervallPunktSuche.IntervallpunktSucheLinear(MetrischeSkala, (decimal)row.F1).IntervallScore;
-            row.F2_calc = IntervallPunktSuche.IntervallpunktSucheLinear(MetrischeSkala, (decimal)row.F2).IntervallScore;
-            row.F3_calc = IntervallPunktSuche.IntervallpunktSucheLinear(MetrischeSkala, (decimal)row.F3).IntervallScore;
-            row.F4_calc = IntervallPunktSuche.IntervallpunktSucheLinear(MetrischeSkala, (decimal)row.F4).IntervallScore;
-            row.F5_calc = IntervallPunktSuche.IntervallpunktSucheLinear(MetrischeSkala, (decimal)row.F5).IntervallScore;
-            row.F6_calc = IntervallPunktSuche.IntervallpunktSucheLinear(MetrischeSkala, (decimal)row.F6).IntervallScore;
-            row.F7_calc = IntervallPunktSuche.IntervallpunktSucheLinear(MetrischeSkala, (decimal)row.F7).IntervallScore;
-            row.F8_calc = IntervallPunktSuche.IntervallpunktSucheLinear(MetrischeSkala, (decimal)row.F8).IntervallScore;
-            row.F9_calc = IntervallPunktSuche.IntervallpunktSucheLinear(MetrischeSkala, (decimal)row.F9).IntervallScore;
-            row.F10_calc = IntervallPunktSuche.IntervallpunktSucheLinear(MetrischeSkala, (decimal)row.F10).IntervallScore;
+            row.F1_calc = IntervalPointSearch.IntervalPointLinearSearch(MetrischeSkala, (decimal)row.F1).IntervalScore;
+            row.F2_calc = IntervalPointSearch.IntervalPointLinearSearch(MetrischeSkala, (decimal)row.F2).IntervalScore;
+            row.F3_calc = IntervalPointSearch.IntervalPointLinearSearch(MetrischeSkala, (decimal)row.F3).IntervalScore;
+            row.F4_calc = IntervalPointSearch.IntervalPointLinearSearch(MetrischeSkala, (decimal)row.F4).IntervalScore;
+            row.F5_calc = IntervalPointSearch.IntervalPointLinearSearch(MetrischeSkala, (decimal)row.F5).IntervalScore;
+            row.F6_calc = IntervalPointSearch.IntervalPointLinearSearch(MetrischeSkala, (decimal)row.F6).IntervalScore;
+            row.F7_calc = IntervalPointSearch.IntervalPointLinearSearch(MetrischeSkala, (decimal)row.F7).IntervalScore;
+            row.F8_calc = IntervalPointSearch.IntervalPointLinearSearch(MetrischeSkala, (decimal)row.F8).IntervalScore;
+            row.F9_calc = IntervalPointSearch.IntervalPointLinearSearch(MetrischeSkala, (decimal)row.F9).IntervalScore;
+            row.F10_calc = IntervalPointSearch.IntervalPointLinearSearch(MetrischeSkala, (decimal)row.F10).IntervalScore;
 
             return row;
         }
 
-        List<IntervallPunktMetrisch> MetrischeSkala = new List<IntervallPunktMetrisch>();
+        List<IntervalPointMetric> MetrischeSkala = new List<IntervalPointMetric>();
 
         [TestMethod]
         public void TestDataflow_Massendaten()
@@ -128,10 +128,10 @@ namespace ETLObjectsTest.DataFlow
 
             for (int i = SkalaGrenze * -1; i < SkalaGrenze; i = i + 50)
             {
-                MetrischeSkala.Add(new IntervallPunktMetrisch(i, i));
+                MetrischeSkala.Add(new IntervalPointMetric(i, i));
             }
 
-           
+
             int Anzahl_je_Faktor = 10000;
             int Anzahl_Faktoren = 10;
 
@@ -150,10 +150,10 @@ namespace ETLObjectsTest.DataFlow
                 new TableColumn("F10", "int", allowNulls: true),});
 
             string sql_generate_Massendaten = @"
-select top 0 F1,F2,F3,F4,F5,F6,F7,F8,F9,F10 into test.tmp from "+ QuellTabelle + @" -- tmp-Tabelle erstellen
-declare @grenze as int = "+ SkalaGrenze + @"
+select top 0 F1,F2,F3,F4,F5,F6,F7,F8,F9,F10 into test.tmp from " + QuellTabelle + @" -- tmp-Tabelle erstellen
+declare @grenze as int = " + SkalaGrenze + @"
 declare @i as int = 0
-while (@i < "+ Anzahl_je_Faktor + @")
+while (@i < " + Anzahl_je_Faktor + @")
 begin
 	insert into test.tmp
 	select @i % @grenze, @i % @grenze + 1, @i % @grenze + 2, (@i % @grenze) * -1, (@i % @grenze) * -1 -1, @i % @grenze, @i % @grenze -1, @i % @grenze +2, @i% @grenze+3, @i % @grenze+4
@@ -163,7 +163,7 @@ end
 declare @j as int = 0
 while (@j < " + Anzahl_Faktoren + @")
 begin
-	insert into "+ QuellTabelle + @"
+	insert into " + QuellTabelle + @"
 	select F1,F2,F3,F4,F5,F6,F7,F8,F9,F10 from test.tmp
 	set @j = @j + 1
 end
@@ -173,7 +173,7 @@ end
 
             SqlTask.ExecuteNonQuery("Generiere Massendaten", sql_generate_Massendaten);
 
-            
+
             string ZielTabelle = "test.destination";
             CreateTableTask.Create(ZielTabelle, new List<TableColumn>() {
                 new TableColumn("Key", "int", allowNulls: false, isPrimaryKey: true) { IsIdentity = false },
@@ -188,7 +188,7 @@ end
                 new TableColumn("F9", "int", allowNulls: true), new TableColumn("F9_calc", "int", allowNulls: true),
                 new TableColumn("F10", "int", allowNulls: true), new TableColumn("F10_calc", "int", allowNulls: true),});
 
-            
+
             System.Data.SqlClient.SqlConnectionStringBuilder builder_CurrentDbConnection
                 = new System.Data.SqlClient.SqlConnectionStringBuilder(ControlFlow.CurrentDbConnection.ConnectionString.ToString());
             string Current_InitialCatalog = builder_CurrentDbConnection.InitialCatalog;
@@ -210,15 +210,15 @@ end
 
             Graph g = new Graph();
 
-            g.getVertex(0, DBSource );
-            g.getVertex(1, new RowTransformFunction<Datensatz>(RowTransformationDB));
-            g.getVertex(2, Ziel_Schreibe );
+            g.GetVertex(0, DBSource);
+            g.GetVertex(1, new RowTransformFunction<Datensatz>(RowTransformationDB));
+            g.GetVertex(2, Ziel_Schreibe);
 
-            g.addEdge(0, 1); // connect 0 to 1
-            g.addEdge(1, 2); // connect 1 to 2
+            g.AddEdge(0, 1); // connect 0 to 1
+            g.AddEdge(1, 2); // connect 1 to 2
 
 
-            TestHelper.VisualizeGraph(g);
+            //TestHelper.VisualizeGraph(g);
 
 
             int MaxDegreeOfParallelism = 1;

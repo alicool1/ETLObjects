@@ -26,7 +26,7 @@ namespace ETLObjects
         /// liefert true, falls Graph leer
         /// </summary>
         /// <returns></returns>
-        public Boolean isEmpty()
+        public Boolean IsEmpty()
         {
             return (graph.Count == 0); // mit isEmpty() von HashMap
         }
@@ -35,7 +35,7 @@ namespace ETLObjects
         /// liefert die Anzahl der Knoten
         /// </summary>
         /// <returns></returns>
-        public int size()
+        public int Size()
         {
             return graph.Count; // mit size() von HashMap
         }
@@ -44,7 +44,7 @@ namespace ETLObjects
         /// liefert Knoten als Liste von Vertex
         /// </summary>
         /// <returns></returns>
-        public List<Vertex> vertices()
+        public List<Vertex> Vertices()
         {
             List<Vertex> vertList = new List<Vertex>();
             foreach (long key in graph.Keys)
@@ -59,7 +59,7 @@ namespace ETLObjects
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>
-        public Vertex getVertex(long o, object BenutzerObjekt)
+        public Vertex GetVertex(long o, object BenutzerObjekt)
         {
             Vertex v = null; // besorge Knoten zu Knotennamen
             if (!graph.ContainsKey(o))
@@ -85,10 +85,10 @@ namespace ETLObjects
         /// <param name="source"></param>
         /// <param name="dest"></param>
         /// <param name="cost"></param>
-        public void addEdge(long source, long dest, double cost)
+        public void AddEdge(long source, long dest, double cost)
         {
-            Vertex v = getVertex(source, null); // finde Knoten v zum Startnamen
-            Vertex w = getVertex(dest, null); // finde Knoten w zum Zielnamen
+            Vertex v = GetVertex(source, null); // finde Knoten v zum Startnamen
+            Vertex w = GetVertex(dest, null); // finde Knoten w zum Zielnamen
             v.edges.Add(new Edge(w, cost)); // fuege Kante (v,w) mit Kosten cost ein
         }
 
@@ -97,10 +97,10 @@ namespace ETLObjects
         /// </summary>
         /// <param name="source"></param>
         /// <param name="dest"></param>
-        public void addEdge(long source, long dest)
+        public void AddEdge(long source, long dest)
         {
-            Vertex v = getVertex(source, null); // finde Knoten v zum Startnamen
-            Vertex w = getVertex(dest, null); // finde Knoten w zum Zielnamen
+            Vertex v = GetVertex(source, null); // finde Knoten v zum Startnamen
+            Vertex w = GetVertex(dest, null); // finde Knoten w zum Zielnamen
             v.edges.Add(new Edge(w, 0)); // fuege Kante (v,w) mit Kosten cost = 0 ein
         }
     }

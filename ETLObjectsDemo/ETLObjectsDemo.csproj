@@ -49,7 +49,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ETLToolbox\ETLObjects.csproj">
+    <ProjectReference Include="..\ETLObjects\ETLObjects.csproj">
       <Project>{0c7548ba-a597-488a-8add-2f628be691d6}</Project>
       <Name>ETLObjects</Name>
     </ProjectReference>

@@ -7,7 +7,7 @@ using System.Threading.Tasks.Dataflow;
 using System.Data.SqlClient;
 
 namespace ETLObjects {
-    public class DBSource<DS> : IDataFlowSource<DS>
+    public class DBSource<DS> : IDataFlowSource<DS>, IDisposable
     {
 
         public IConnectionManager Connection { get; set; }
@@ -21,13 +21,14 @@ namespace ETLObjects {
         }
 
         /// <summary>
-        /// SQL-Abfrage, die die Daten für den DataFlowTask liefert.
+        /// SQL query that returns data for DataFlowTask
         /// </summary>
         public string SqlQueryString { get; set; }
 
         public string ServerName { get; set; }
+
         /// <summary>
-        /// SQL-Server Datenbankname
+        /// SQL Server DB name
         /// </summary>
         public string InitialCatalog { get; set; }
         public int ConnectionTimeOut { get; set; }
@@ -57,9 +58,7 @@ namespace ETLObjects {
         {
             return string.Format("{0} - {1} ..", InitialCatalog , SqlQueryString.Substring(0, 15));
         }
-        /// <summary>
-        /// Initialisierung SQL-Verbindung und SQLDataReader öffnen, Erzeugung IEnumerable für foreach-Schleife
-        /// </summary>
+
         public void Open()
         {
             if (string.IsNullOrEmpty(ServerName)) throw new InvalidOperationException("Fehler: Die SqlServer Eigengschaft wurde nicht gesetzt!");
@@ -80,7 +79,7 @@ namespace ETLObjects {
         }
 
         #region IDisposable Support
-        private bool disposedValue = false; // Dient zur Erkennung redundanter Aufrufe.
+        private bool disposedValue = false;
 
         protected virtual void Dispose(bool disposing)
         {
@@ -88,29 +87,18 @@ namespace ETLObjects {
             {
                 if (disposing)
                 {
-                    // TODO: verwalteten Zustand (verwaltete Objekte) entsorgen.
+                    _con?.Close();
+                    _con = null;
                 }
-
-                // TODO: nicht verwaltete Ressourcen (nicht verwaltete Objekte) freigeben und Finalizer weiter unten überschreiben.
-                // TODO: große Felder auf Null setzen.
-
                 disposedValue = true;
             }
         }
 
-        // TODO: Finalizer nur überschreiben, wenn Dispose(bool disposing) weiter oben Code für die Freigabe nicht verwalteter Ressourcen enthält.
-        // ~DBSource() {
-        //   // Ändern Sie diesen Code nicht. Fügen Sie Bereinigungscode in Dispose(bool disposing) weiter oben ein.
-        //   Dispose(false);
-        // }
+        public void Close() => Dispose();
 
-        // Dieser Code wird hinzugefügt, um das Dispose-Muster richtig zu implementieren.
         public void Dispose()
         {
-            // Ändern Sie diesen Code nicht. Fügen Sie Bereinigungscode in Dispose(bool disposing) weiter oben ein.
             Dispose(true);
-            // TODO: Auskommentierung der folgenden Zeile aufheben, wenn der Finalizer weiter oben überschrieben wird.
-            // GC.SuppressFinalize(this);
         }
         #endregion
     }

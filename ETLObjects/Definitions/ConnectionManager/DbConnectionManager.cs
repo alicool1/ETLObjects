@@ -45,8 +45,6 @@ namespace ETLObjects {
             }
         }
 
-        //public void CloseConnection() => Close();
-
         public Command CreateCommand(string commandText) {
             var cmd = DbConnection.CreateCommand();
             cmd.CommandTimeout = 0;

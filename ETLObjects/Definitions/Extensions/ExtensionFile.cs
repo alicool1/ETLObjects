@@ -13,7 +13,7 @@ namespace ETLObjects {
         public const string FILENAMEMATCH = @"^(\w*?)_([0-9A-Za-z!%&()=+#~äöüÄÖÜß -]*).sql";
 
         //TODO read the version from somewhere else!
-        public string InstalledVersion => "2.2 VP1";
+        public string InstalledVersion => "1.0";
 
         public string Type { get; private set; }
         public string Name { get; private set; }
