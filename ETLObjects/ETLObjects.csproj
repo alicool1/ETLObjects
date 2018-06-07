@@ -77,9 +77,8 @@
     <Compile Include="Algorithms\Graph\Graph.cs" />
     <Compile Include="Algorithms\Graph\TopoSort.cs" />
     <Compile Include="Algorithms\Graph\Vertex.cs" />
-    <Compile Include="Algorithms\IntervallPunktMetrisch.cs" />
-    <Compile Include="Algorithms\IntervallPunktNominal.cs" />
-    <Compile Include="Algorithms\IntervallPunktSuche.cs" />
+    <Compile Include="Algorithms\IntervalPoint\IntervalPointSearch.cs" />
+    <Compile Include="Algorithms\IntervalPoint\IntervalPoint.cs" />
     <Compile Include="Definitions\DataFlow\DataReaderToEnumerable.cs" />
     <Compile Include="Definitions\DataFlow\DBSource.cs" />
     <Compile Include="Definitions\DataFlow\EnumerableToDataReader.cs" />

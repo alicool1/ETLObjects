@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 
 namespace ETLObjects {
+    //TODO replace this with build-in .net class SqlConnectionStringBuilder (or wrap it)
     public class ConnectionString {
         static string PATTERNBEGIN = $@"(.*)(";
         static string PATTERNEND = $@"\s*=\s*)(.*?)(;|$)(.*)";

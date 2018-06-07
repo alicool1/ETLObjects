@@ -9,7 +9,7 @@ using System.Data.Common;
 namespace ETLObjectsTest.DataFlow
 {
     [TestClass]
-    public class TestDataFlowTask2
+    public class TestFlowDB2DB
     {
         public TestContext TestContext { get; set; }
         public string ConnectionStringParameter => TestContext?.Properties["connectionString"].ToString();
@@ -70,8 +70,8 @@ namespace ETLObjectsTest.DataFlow
         [TestMethod]
         public void TestDataflowDbToDb()
         {
-            string ZielTabelle = "test.Staging3";
-            CreateTableTask.Create(ZielTabelle, new List<TableColumn>() { Ziel_F0, Ziel_F1, Ziel_F2, Ziel_F3 });
+            string destTable = "test.Staging3";
+            CreateTableTask.Create(destTable, new List<TableColumn>() { Ziel_F0, Ziel_F1, Ziel_F2, Ziel_F3 });
 
             DBSource<Datensatz> DBSource = new DBSource<Datensatz>(
                 ".", "ETLToolbox"
@@ -82,31 +82,31 @@ namespace ETLObjectsTest.DataFlow
                 );
             DBSource.DataMappingMethod = ReaderAdapter.Read;
 
-            DBDestination<Datensatz> Ziel_Schreibe = new DBDestination<Datensatz>();
-            Ziel_Schreibe.TableName_Target = ZielTabelle;
-            Ziel_Schreibe.FieldCount = 4;
-            Ziel_Schreibe.ObjectMappingMethod = WriterAdapter.Fill;
-            Ziel_Schreibe.Connection = ControlFlow.CurrentDbConnection;
+            DBDestination<Datensatz> destination = new DBDestination<Datensatz>();
+            destination.TableName_Target = destTable;
+            destination.FieldCount = 4;
+            destination.ObjectMappingMethod = WriterAdapter.Fill;
+            destination.Connection = ControlFlow.CurrentDbConnection;
 
             
             Graph g = new Graph();
             
-            g.getVertex(0, DBSource );
-            g.getVertex(1, new RowTransformFunction<Datensatz>(RowTransformationDB));
-            g.getVertex(2, new RowTransformFunction<Datensatz>(RowTransformationDB2));
-            g.getVertex(3, Ziel_Schreibe );
+            g.GetVertex(0, DBSource );
+            g.GetVertex(1, new RowTransformFunction<Datensatz>(RowTransformationDB));
+            g.GetVertex(2, new RowTransformFunction<Datensatz>(RowTransformationDB2));
+            g.GetVertex(3, destination );
 
-            g.addEdge(0, 1); // connect 0 to 1
-            g.addEdge(1, 2); // connect 1 to 2
-            g.addEdge(2, 3); // connect 2 to 3
+            g.AddEdge(0, 1); // connect 0 to 1
+            g.AddEdge(1, 2); // connect 1 to 2
+            g.AddEdge(2, 3); // connect 2 to 3
 
-            TestHelper.VisualizeGraph(g);
+            //TestHelper.VisualizeGraph(g);
 
             //DataFlowTask<Datensatz>.Execute("Test dataflow task", DBSource, Ziel_Schreibe, 10000,1, RowTransformationDB);
 
             DataFlowTask<Datensatz>.Execute("Test dataflow task", 10000, 1, g);
 
-            Assert.AreEqual(4, SqlTask.ExecuteScalar<int>("Check staging table", string.Format("select count(*) from {0}", ZielTabelle)));
+            Assert.AreEqual(4, SqlTask.ExecuteScalar<int>("Check staging table", string.Format("select count(*) from {0}", destTable)));
         }
 
         

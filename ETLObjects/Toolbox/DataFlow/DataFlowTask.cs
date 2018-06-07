@@ -86,11 +86,24 @@ namespace ETLObjects
             List<object> WatingForCompletitionCollection = new List<object>();
             List<object> ToCompleteCollection = new List<object>();
 
+            //TODO All Checks should be done before any real calculations or so happens 
+
             // the algorithm for topological sorting is required 
             // for the chronological order in the DataFlow-Pipeline
-            foreach (long i in TopoSort.sortGraph(g).Keys)
+            DoALotOfChecksAndSomeRealStuff(WatingForCompletitionCollection, ToCompleteCollection);
+
+            DoTransformOrThrowAnExceptionBecauseThereIsMoreToCheck(ToCompleteCollection);
+
+            WaitForCompletionOrEndWithException(WatingForCompletitionCollection);
+        }
+
+       
+
+        private void DoALotOfChecksAndSomeRealStuff(List<object> WatingForCompletitionCollection, List<object> ToCompleteCollection)
+        {
+            foreach (long i in TopoSort.SortGraph(g).Keys)
             {
-                Vertex v_source = g.getVertex(i, null);
+                Vertex v_source = g.GetVertex(i, null);
                 // loop over all edges of v_source 
                 foreach (Edge e in v_source.edges)
                 {
@@ -98,43 +111,29 @@ namespace ETLObjects
 
                     // for case that object in vertex is missing
                     if (v_source.BenutzerObjekte == null || v_source.BenutzerObjekte[0] == null)
-                    {
-                        #region
                         throw new Exception(string.Format("Vertex needs any object. For example an IDataFlowSource."));
-                        #endregion
-                    }
                     // for case that v_source is type of IDataFlowSource
                     else if (new List<Type>(new Type[] { typeof(CSVSource<DS>), typeof(DBSource<DS>) }).Contains(v_source.BenutzerObjekte[0].GetType()))
                     {
-                        #region
                         IDataFlowSource<DS> source = (IDataFlowSource<DS>)v_source.BenutzerObjekte[0];
-                        #endregion
 
                         // for case that object in vertex is missing
                         if (v_dest.BenutzerObjekte == null || v_dest.BenutzerObjekte[0] == null)
-                        {
-                            #region
                             throw new Exception(string.Format("Vertex needs any object. For example DBDestination."));
-                            #endregion
-                        }
                         // for case that v_source is type of IDataFlowSource
                         // AND that v_dest is type of RowTransformFunction
                         else if (v_dest.BenutzerObjekte[0].GetType() == typeof(RowTransformFunction<DS>))
                         {
-                            #region
                             IDataFlowTransformation<DS> t = (IDataFlowTransformation<DS>)v_dest.BenutzerObjekte[0];
                             TransformBlock<DS, DS> t_b = new TransformBlock<DS, DS>(t.rowTransformFunction
                                 , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
                             v_dest.BenutzerObjekte.Add(t_b);
                             using (source) { source.Open(); source.Read(t_b); }
-                            #endregion
                         }
                         // for case that type is not implemented
                         else
                         {
-                            #region
                             throw new Exception(string.Format("Type {0} is not implemented.", v_dest.BenutzerObjekte[0].GetType()));
-                            #endregion
                         }
                     }
                     // for case that v_source is type of RowTransformFunction
@@ -145,7 +144,6 @@ namespace ETLObjects
                         // AND that v_dest is type of IDataFlowDestination
                         if (new List<Type>(new Type[] { typeof(DBDestination<DS>) }).Contains(v_dest.BenutzerObjekte[0].GetType()))
                         {
-                            #region
                             IDataFlowDestination<DS> dest = (IDataFlowDestination<DS>)v_dest.BenutzerObjekte[0];
                             //using (dest) // TODO Schnittstelle fehlt
                             //{
@@ -154,7 +152,7 @@ namespace ETLObjects
                             var bacthBlock = new BatchBlock<DS>(BatchSize);
                             var DataFlowDestinationBlock = new ActionBlock<DS[]>(outp => dest.WriteBatch(outp));
 
-                            TransformBlock<DS, DS> t_b = (TransformBlock<DS,DS>)v_source.BenutzerObjekte[1];
+                            TransformBlock<DS, DS> t_b = (TransformBlock<DS, DS>)v_source.BenutzerObjekte[1];
                             t_b.LinkTo(bacthBlock);
                             bacthBlock.LinkTo(DataFlowDestinationBlock);
 
@@ -163,14 +161,11 @@ namespace ETLObjects
 
                             ToCompleteCollection.Add(t_b);
                             WatingForCompletitionCollection.Add(DataFlowDestinationBlock);
-                            #endregion
                         }
                         // for case that v_source is type of RowTransformFunction
                         // AND that v_dest is type of RowTransformFunction
                         else if (v_dest.BenutzerObjekte[0].GetType() == typeof(RowTransformFunction<DS>))
                         {
-                            #region
-                            
                             TransformBlock<DS, DS> t_b_source = (TransformBlock<DS, DS>)v_source.BenutzerObjekte[1];
 
                             RowTransformFunction<DS> tr = (RowTransformFunction<DS>)v_dest.BenutzerObjekte[0];
@@ -184,35 +179,37 @@ namespace ETLObjects
 
                             ToCompleteCollection.Add(t_b_source);
                             WatingForCompletitionCollection.Add(t_b_dest);
-                            #endregion
                         }
                         // for case that type is not implemented
                         else
                         {
-                            #region
                             throw new Exception(string.Format("Type {0} is not implemented.", v_dest.BenutzerObjekte[0].GetType()));
-                            #endregion
+
                         }
                     }
                     // for case that type is not implemented
                     else
                     {
-                        #region
                         throw new Exception(string.Format("Type {0} is not implemented.", v_source.BenutzerObjekte[0].GetType()));
-                        #endregion
                     }
                 }
             }
+        }
 
+        private static void DoTransformOrThrowAnExceptionBecauseThereIsMoreToCheck(List<object> ToCompleteCollection)
+        {
             foreach (object o in ToCompleteCollection)
             {
                 // for case that type is TransformBlock
                 if (o.GetType() == typeof(TransformBlock<DS, DS>))
-                    ((TransformBlock<DS, DS>)o).Complete() ;
+                    ((TransformBlock<DS, DS>)o).Complete();
                 // for case that type is not implemented
                 else throw new Exception(string.Format("Type {0} in ToCompleteCollection is not implemented.", o.GetType()));
             }
+        }
 
+        private static void WaitForCompletionOrEndWithException(List<object> WatingForCompletitionCollection)
+        {
             foreach (object o in WatingForCompletitionCollection)
             {
                 // for case that type is TransformBlock
@@ -227,44 +224,45 @@ namespace ETLObjects
             }
         }
 
-        public void Execute_CSVSource()
-        {
-            SourceBufferBlock = new BufferBlock<DS>();
-            DestinationBatchBlock = new BatchBlock<DS>(BatchSize);
+        //TODO Delete this
+        //public void Execute_CSVSource()
+        //{
+        //    SourceBufferBlock = new BufferBlock<DS>();
+        //    DestinationBatchBlock = new BatchBlock<DS>(BatchSize);
 
-            using (DataFlowSource)
-            {
-
-
-                DataFlowSource.Open();
-                DataFlowDestination.Open();
-
-                NLogger.Info(TaskName, TaskType, "START", TaskHash, ControlFlow.STAGE, ControlFlow.CurrentLoadProcess?.LoadProcessKey);
-                /* Pipeline:
-                 * Source -> BufferBlock -> RowTransformation -> BatchBlock -> BatchTransformation -> Destination
-                 * */
-                RowTransformBlock = new TransformBlock<DS, DS>(inp => RowTransformFunction.Invoke(inp));
-                BatchTransformBlock = new TransformBlock<DS[], InMemoryTable>(inp => BatchTransformFunction.Invoke(inp));
-                DestinationBlock = new ActionBlock<InMemoryTable>(outp => DataFlowDestination.WriteBatch(outp));
-
-                SourceBufferBlock.LinkTo(RowTransformBlock);
-                RowTransformBlock.LinkTo(DestinationBatchBlock);
-                DestinationBatchBlock.LinkTo(BatchTransformBlock);
-                BatchTransformBlock.LinkTo(DestinationBlock);
-                SourceBufferBlock.Completion.ContinueWith(t => { NLogger.Debug($"SoureBufferBlock DataFlow Completed: {TaskName}", TaskType, "RUN", TaskHash); RowTransformBlock.Complete(); });
-                RowTransformBlock.Completion.ContinueWith(t => { NLogger.Debug($"RowTransformBlock DataFlow Completed: {TaskName}", TaskType, "RUN", TaskHash); DestinationBatchBlock.Complete(); });
-                DestinationBatchBlock.Completion.ContinueWith(t => { NLogger.Debug($"DestinationBatchBlock DataFlow Completed: {TaskName}", TaskType, "RUN", TaskHash); BatchTransformBlock.Complete(); });
-                BatchTransformBlock.Completion.ContinueWith(t => { NLogger.Debug($"BatchTransformBlock DataFlow Completed: {TaskName}", TaskType, "RUN", TaskHash); DestinationBlock.Complete(); });
-
-                DataFlowSource.Read(RowTransformBlock);
+        //    using (DataFlowSource)
+        //    {
 
 
-                SourceBufferBlock.Complete();
-                DestinationBlock.Completion.Wait();
+        //        DataFlowSource.Open();
+        //        DataFlowDestination.Open();
 
-                NLogger.Info(TaskName, TaskType, "END", TaskHash, ControlFlow.STAGE, ControlFlow.CurrentLoadProcess?.LoadProcessKey);
-            }
-        }
+        //        NLogger.Info(TaskName, TaskType, "START", TaskHash, ControlFlow.STAGE, ControlFlow.CurrentLoadProcess?.LoadProcessKey);
+        //        /* Pipeline:
+        //         * Source -> BufferBlock -> RowTransformation -> BatchBlock -> BatchTransformation -> Destination
+        //         * */
+        //        RowTransformBlock = new TransformBlock<DS, DS>(inp => RowTransformFunction.Invoke(inp));
+        //        BatchTransformBlock = new TransformBlock<DS[], InMemoryTable>(inp => BatchTransformFunction.Invoke(inp));
+        //        DestinationBlock = new ActionBlock<InMemoryTable>(outp => DataFlowDestination.WriteBatch(outp));
+
+        //        SourceBufferBlock.LinkTo(RowTransformBlock);
+        //        RowTransformBlock.LinkTo(DestinationBatchBlock);
+        //        DestinationBatchBlock.LinkTo(BatchTransformBlock);
+        //        BatchTransformBlock.LinkTo(DestinationBlock);
+        //        SourceBufferBlock.Completion.ContinueWith(t => { NLogger.Debug($"SoureBufferBlock DataFlow Completed: {TaskName}", TaskType, "RUN", TaskHash); RowTransformBlock.Complete(); });
+        //        RowTransformBlock.Completion.ContinueWith(t => { NLogger.Debug($"RowTransformBlock DataFlow Completed: {TaskName}", TaskType, "RUN", TaskHash); DestinationBatchBlock.Complete(); });
+        //        DestinationBatchBlock.Completion.ContinueWith(t => { NLogger.Debug($"DestinationBatchBlock DataFlow Completed: {TaskName}", TaskType, "RUN", TaskHash); BatchTransformBlock.Complete(); });
+        //        BatchTransformBlock.Completion.ContinueWith(t => { NLogger.Debug($"BatchTransformBlock DataFlow Completed: {TaskName}", TaskType, "RUN", TaskHash); DestinationBlock.Complete(); });
+
+        //        DataFlowSource.Read(RowTransformBlock);
+
+
+        //        SourceBufferBlock.Complete();
+        //        DestinationBlock.Completion.Wait();
+
+        //        NLogger.Info(TaskName, TaskType, "END", TaskHash, ControlFlow.STAGE, ControlFlow.CurrentLoadProcess?.LoadProcessKey);
+        //    }
+        //}
 
         public override void Execute()
         {

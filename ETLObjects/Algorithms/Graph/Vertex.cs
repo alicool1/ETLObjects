@@ -46,7 +46,7 @@ namespace ETLObjects
         /// </summary>
         /// <param name="w"></param>
         /// <returns></returns>
-        public Boolean hasEdge(Vertex w)
+        public Boolean HasEdge(Vertex w)
         {
             foreach (Edge e in edges) // fuer jede ausgehende Nachbarkante pruefe
                 if (e.dest == w) // falls Zielknoten mit w uebereinstimmt

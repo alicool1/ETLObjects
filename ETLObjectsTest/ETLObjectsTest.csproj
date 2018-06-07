@@ -6,8 +6,8 @@
     <ProjectGuid>{E18C5029-9FA4-4846-828C-1B42D5D18C3C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ALE.ETLToolboxTest</RootNamespace>
-    <AssemblyName>ETLToolboxTest</AssemblyName>
+    <RootNamespace>ETLObjectsTest</RootNamespace>
+    <AssemblyName>ETLObjectsTest</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -79,13 +79,13 @@
     <Compile Include="Database\TestCreateIndexTask.cs" />
     <Compile Include="Database\TestCalculateDatabaseHashTask.cs" />
     <Compile Include="Database\TestParallelProcessing.cs" />
-    <Compile Include="DataFlow\TestDataFlowTask3.cs" />
-    <Compile Include="DataFlow\TestDataFlowTask2.cs" />
+    <Compile Include="DataFlow\TestFlowWithBigData.cs" />
+    <Compile Include="DataFlow\TestFlowDB2DB.cs" />
     <Compile Include="Logging\TestGetLoadProcessAsJSONTask.cs" />
     <Compile Include="Logging\TestETLLogWithDemo.cs" />
     <Compile Include="Logging\TestLoadProcessLog.cs" />
     <Compile Include="Logging\TestLogging.cs" />
-    <Compile Include="DataFlow\TestDataFlowTask.cs" />
+    <Compile Include="DataFlow\TestFlowCSV2DB.cs" />
     <Compile Include="Database\TestCreateTableTask.cs" />
     <Compile Include="Database\TestCreateSchemaTask.cs" />
     <Compile Include="Database\TestCRUDViewTask.cs" />
@@ -99,12 +99,6 @@
     <Compile Include="Database\TestAddFileGroupTask.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ETLToolbox\ETLObjects.csproj">
-      <Project>{0c7548ba-a597-488a-8add-2f628be691d6}</Project>
-      <Name>ETLObjects</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="App.config" />
     <None Include="DataFlow\InputData.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -114,6 +108,12 @@
     </None>
     <None Include="packages.config" />
     <None Include="Tests.runsettings" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ETLObjects\ETLObjects.csproj">
+      <Project>{0c7548ba-a597-488a-8add-2f628be691d6}</Project>
+      <Name>ETLObjects</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

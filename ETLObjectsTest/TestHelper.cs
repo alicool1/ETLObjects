@@ -18,7 +18,7 @@ namespace ETLObjectsTest
             Microsoft.Msagl.GraphViewerGdi.GViewer viewer = new Microsoft.Msagl.GraphViewerGdi.GViewer();
             Microsoft.Msagl.Drawing.Graph graph = new Microsoft.Msagl.Drawing.Graph("graph");
 
-            foreach (Vertex v in gr.vertices())
+            foreach (Vertex v in gr.Vertices())
             {
                 foreach (Edge e in v.edges)
                 {
