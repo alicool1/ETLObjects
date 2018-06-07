@@ -15,7 +15,6 @@ namespace ETLObjects
 
         void Read(ITargetBlock<DS> TargetBlock);
 
-        Func<DS, DS> target_transformation { get; set; }
 
     }
 

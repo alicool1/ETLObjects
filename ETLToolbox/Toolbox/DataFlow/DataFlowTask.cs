@@ -83,6 +83,9 @@ namespace ETLObjects
 
         public void Execute_Graph()
         {
+            List<object> WatingForCompletitionCollection = new List<object>();
+            List<object> ToCompleteCollection = new List<object>();
+
             // the algorithm for topological sorting is required 
             // for the chronological order in the DataFlow-Pipeline
             foreach (long i in TopoSort.sortGraph(g).Keys)
@@ -139,12 +142,12 @@ namespace ETLObjects
                     {
 
                         // for case that v_source is type of RowTransformFunction
-                        // AND that v_dest is type of DBDestination
+                        // AND that v_dest is type of IDataFlowDestination
                         if (new List<Type>(new Type[] { typeof(DBDestination<DS>) }).Contains(v_dest.BenutzerObjekte[0].GetType()))
                         {
                             #region
                             IDataFlowDestination<DS> dest = (IDataFlowDestination<DS>)v_dest.BenutzerObjekte[0];
-                            //using (dest) // TODO IDisposible
+                            //using (dest) // TODO Schnittstelle fehlt
                             //{
                             dest.Open();
 
@@ -158,8 +161,29 @@ namespace ETLObjects
                             t_b.Completion.ContinueWith(t => { bacthBlock.Complete(); });
                             bacthBlock.Completion.ContinueWith(t => { DataFlowDestinationBlock.Complete(); });
 
-                            t_b.Complete();
-                            DataFlowDestinationBlock.Completion.Wait();
+                            ToCompleteCollection.Add(t_b);
+                            WatingForCompletitionCollection.Add(DataFlowDestinationBlock);
+                            #endregion
+                        }
+                        // for case that v_source is type of RowTransformFunction
+                        // AND that v_dest is type of RowTransformFunction
+                        else if (v_dest.BenutzerObjekte[0].GetType() == typeof(RowTransformFunction<DS>))
+                        {
+                            #region
+                            
+                            TransformBlock<DS, DS> t_b_source = (TransformBlock<DS, DS>)v_source.BenutzerObjekte[1];
+
+                            RowTransformFunction<DS> tr = (RowTransformFunction<DS>)v_dest.BenutzerObjekte[0];
+                            TransformBlock<DS, DS> t_b_dest = new TransformBlock<DS, DS>(tr.rowTransformFunction
+                                , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
+                            v_dest.BenutzerObjekte.Add(t_b_dest);
+
+                            t_b_source.LinkTo(t_b_dest);
+
+                            t_b_source.Completion.ContinueWith(t => { t_b_dest.Complete(); });
+
+                            ToCompleteCollection.Add(t_b_source);
+                            WatingForCompletitionCollection.Add(t_b_dest);
                             #endregion
                         }
                         // for case that type is not implemented
@@ -178,6 +202,28 @@ namespace ETLObjects
                         #endregion
                     }
                 }
+            }
+
+            foreach (object o in ToCompleteCollection)
+            {
+                // for case that type is TransformBlock
+                if (o.GetType() == typeof(TransformBlock<DS, DS>))
+                    ((TransformBlock<DS, DS>)o).Complete() ;
+                // for case that type is not implemented
+                else throw new Exception(string.Format("Type {0} in ToCompleteCollection is not implemented.", o.GetType()));
+            }
+
+            foreach (object o in WatingForCompletitionCollection)
+            {
+                // for case that type is TransformBlock
+                if (o.GetType() == typeof(TransformBlock<DS, DS>))
+                    ((TransformBlock<DS, DS>)o).Completion.Wait();
+                // for case that type is ActionBlock
+                else if (o.GetType() == typeof(ActionBlock<DS[]>))
+                    ((ActionBlock<DS[]>)o).Completion.Wait();
+                // for case that type is not implemented
+                else throw new Exception(string.Format("Type {0} in WatingForCompletitionCollection is not implemented.", o.GetType()));
+
             }
         }
 

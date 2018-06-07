@@ -59,13 +59,18 @@ namespace ETLObjects
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>
-        public Vertex getVertex(long o, List<object> BenutzerObjekte)
+        public Vertex getVertex(long o, object BenutzerObjekt)
         {
             Vertex v = null; // besorge Knoten zu Knotennamen
             if (!graph.ContainsKey(o))
             { // falls nicht gefunden
                 v = new Vertex(o); // lege neuen Knoten an
-                if (BenutzerObjekte != null) v.BenutzerObjekte = BenutzerObjekte;
+                if (BenutzerObjekt != null)
+                {
+                    v.BenutzerObjekt = BenutzerObjekt;
+                    if (v.BenutzerObjekte == null) v.BenutzerObjekte = new List<object>();
+                    v.BenutzerObjekte.Add(v.BenutzerObjekt);
+                }
                 graph[o] = v; ; // fuege Namen und Knoten in HashMap ein
             }
             else
@@ -85,6 +90,18 @@ namespace ETLObjects
             Vertex v = getVertex(source, null); // finde Knoten v zum Startnamen
             Vertex w = getVertex(dest, null); // finde Knoten w zum Zielnamen
             v.edges.Add(new Edge(w, cost)); // fuege Kante (v,w) mit Kosten cost ein
+        }
+
+        /// <summary>
+        /// fuege Kante ein von Knotennamen source zu Knotennamen dest mit Kosten cost = 0
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="dest"></param>
+        public void addEdge(long source, long dest)
+        {
+            Vertex v = getVertex(source, null); // finde Knoten v zum Startnamen
+            Vertex w = getVertex(dest, null); // finde Knoten w zum Zielnamen
+            v.edges.Add(new Edge(w, 0)); // fuege Kante (v,w) mit Kosten cost = 0 ein
         }
     }
 }

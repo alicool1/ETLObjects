@@ -52,6 +52,11 @@ namespace ETLObjects {
             _enumerableToDataReader.FieldCount = FieldCount;
 
         }
+
+        public override string ToString()
+        {
+            return TableName_Target;
+        }
     }
 
 }

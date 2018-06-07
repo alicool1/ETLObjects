@@ -71,7 +71,23 @@ namespace ETLObjectsTest {
             CSVSource<string[]> CSVSource = 
                 new CSVSource<string[]>("DataFlow/InputData.csv");
 
-            DataFlowTask<string[]>.Execute("Test dataflow task", CSVSource, Ziel_Schreibe, 3, RowTransformation, BatchTransformation);
+            Graph g = new Graph();
+
+            g.getVertex(0, CSVSource);
+            g.getVertex(1, new RowTransformFunction<string[]>(RowTransformation));
+            g.getVertex(2, Ziel_Schreibe);
+
+            g.addEdge(0, 1); // connect 0 to 1
+            g.addEdge(1, 2); // connect 1 to 2
+
+
+            TestHelper.VisualizeGraph(g);
+
+            //DataFlowTask<string[]>.Execute("Test dataflow task", CSVSource, Ziel_Schreibe, 3, RowTransformation, BatchTransformation);
+
+            DataFlowTask<string[]>.Execute("Test dataflow task", 10000, 1, g);
+
+
             Assert.AreEqual(4, SqlTask.ExecuteScalar<int>("Check staging table", string.Format("select count(*) from {0}", ZielTabelle)));                        
         }
 

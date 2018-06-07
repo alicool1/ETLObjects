@@ -68,6 +68,10 @@ namespace ETLObjects {
             }
         }
 
+        public override string ToString()
+        {
+            return FileName;
+        }
 
         public IEnumerable<DS> EnumerableDataSource
         {
@@ -75,7 +79,6 @@ namespace ETLObjects {
         }
         public DataReaderToEnumerable<DS>.DataMapping DataMappingMethod { get; set; }
 
-        public Func<DS, DS> target_transformation { get; set; }
 
         private DataReaderToEnumerable<DS> _dataReaderToEnumerable = new DataReaderToEnumerable<DS>();
 

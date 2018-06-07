@@ -56,6 +56,12 @@ namespace ETLObjectsTest.DataFlow
             row.F3 = row.F1 * -1;
             return row;
         }
+
+        public Datensatz RowTransformationDB2(Datensatz row)
+        {
+            row.F3 = row.F3 * -1;
+            return row;
+        }
         TableColumn Ziel_F0 => new TableColumn("F0", "int", isIdentity : true, isPrimaryKey: true, allowNulls : false);
         TableColumn Ziel_F1 => new TableColumn("F1", "int", allowNulls: true);
         TableColumn Ziel_F2 => new TableColumn("F2", "int", allowNulls: true);
@@ -82,29 +88,28 @@ namespace ETLObjectsTest.DataFlow
             Ziel_Schreibe.ObjectMappingMethod = WriterAdapter.Fill;
             Ziel_Schreibe.Connection = ControlFlow.CurrentDbConnection;
 
-            RowTransformFunction<Datensatz> trafo1 = new RowTransformFunction<Datensatz>();
-            trafo1.rowTransformFunction = RowTransformationDB;
-
+            
             Graph g = new Graph();
             
-            g.getVertex(0, new List<object>(new object[] { DBSource }));
-            g.getVertex(1, new List<object>(new object[] { trafo1 }));
-            g.getVertex(2, new List<object>(new object[] { Ziel_Schreibe }));
+            g.getVertex(0, DBSource );
+            g.getVertex(1, new RowTransformFunction<Datensatz>(RowTransformationDB));
+            g.getVertex(2, new RowTransformFunction<Datensatz>(RowTransformationDB2));
+            g.getVertex(3, Ziel_Schreibe );
 
-            g.addEdge(0, 1, 0); // connect 0 to 1
-            g.addEdge(1, 2, 0); // connect 1 to 2
+            g.addEdge(0, 1); // connect 0 to 1
+            g.addEdge(1, 2); // connect 1 to 2
+            g.addEdge(2, 3); // connect 2 to 3
 
+            TestHelper.VisualizeGraph(g);
 
             //DataFlowTask<Datensatz>.Execute("Test dataflow task", DBSource, Ziel_Schreibe, 10000,1, RowTransformationDB);
 
             DataFlowTask<Datensatz>.Execute("Test dataflow task", 10000, 1, g);
 
-
-
             Assert.AreEqual(4, SqlTask.ExecuteScalar<int>("Check staging table", string.Format("select count(*) from {0}", ZielTabelle)));
         }
 
-
+        
 
     }
 }

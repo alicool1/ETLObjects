@@ -10,6 +10,32 @@ namespace ETLObjectsTest
 {
     public static class TestHelper
     {
+
+        internal static void VisualizeGraph(Graph gr)
+        {
+
+            System.Windows.Forms.Form form = new System.Windows.Forms.Form();
+            Microsoft.Msagl.GraphViewerGdi.GViewer viewer = new Microsoft.Msagl.GraphViewerGdi.GViewer();
+            Microsoft.Msagl.Drawing.Graph graph = new Microsoft.Msagl.Drawing.Graph("graph");
+
+            foreach (Vertex v in gr.vertices())
+            {
+                foreach (Edge e in v.edges)
+                {
+                    graph.AddEdge(
+                        string.Format("{0} - {1} ", v.key, v.BenutzerObjekte[0])
+                        , string.Format("{0} - {1} ", e.dest.key, e.dest.BenutzerObjekte[0]));
+                }
+            }
+
+            viewer.Graph = graph;
+            form.SuspendLayout();
+            viewer.Dock = System.Windows.Forms.DockStyle.Fill;
+            form.Controls.Add(viewer);
+            form.ResumeLayout();
+            form.ShowDialog();
+        }
+
         internal static string RandomString(int length)
         {
             var random = new Random();

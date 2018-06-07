@@ -27,6 +27,11 @@ namespace ETLObjects
         public List<object> BenutzerObjekte;
 
         /// <summary>
+        /// beliebiges benutzerdefiniertes Objekt
+        /// </summary>
+        public object BenutzerObjekt;
+
+        /// <summary>
         /// Konstruktor fuer Knoten
         /// </summary>
         /// <param name="s"></param>
