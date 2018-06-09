@@ -195,12 +195,12 @@ namespace ETLObjects
                         }
                         // for case that v_source is type of RowTransformFunction
                         // AND that v_dest is type of Broadcast
-                        else if (v_dest.BenutzerObjekte[0].GetType() == typeof(Broadcast<DS>))
+                        else if (v_dest.BenutzerObjekte[0].GetType() == typeof(BroadCast<DS>))
                         {
                             TransformBlock<DS, DS> t_b_source = (TransformBlock<DS, DS>)v_source.BenutzerObjekte[1];
                             
-                            Broadcast<DS> t_broadcast = (Broadcast<DS>)v_dest.BenutzerObjekte[0];
-                            BroadcastBlock<DS> broadcastBlock = new BroadcastBlock<DS>(t_broadcast.CloneTransformFunction
+                            BroadCast<DS> t_broadcast = (BroadCast<DS>)v_dest.BenutzerObjekte[0];
+                            BroadcastBlock<DS> broadcastBlock = new BroadcastBlock<DS>(null
                                 , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
                             ToCompleteCollection.Add(broadcastBlock);
                             v_dest.BenutzerObjekte.Add(broadcastBlock);
@@ -263,7 +263,7 @@ namespace ETLObjects
                         }
                     }
                     // for case that v_source is type of Broadcast
-                    else if (v_source.BenutzerObjekte[0].GetType() == typeof(Broadcast<DS>))
+                    else if (v_source.BenutzerObjekte[0].GetType() == typeof(BroadCast<DS>))
                     {
                         // for case that v_source is type of Broadcast
                         // AND that v_dest is type of IDataFlowDestination

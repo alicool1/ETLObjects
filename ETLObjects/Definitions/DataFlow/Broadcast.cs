@@ -6,9 +6,13 @@ using System.Threading.Tasks;
 
 namespace ETLObjects
 {
-    public class Broadcast<DS> : IDataFlowTransformation<DS>
+    public class BroadCast<DS> : IDataFlowTransformation<DS>
     {
-        public Broadcast(Func<DS, DS> cloneTransformFunction)
+        public BroadCast()
+        {
+
+        }
+        public BroadCast(Func<DS, DS> cloneTransformFunction)
         {
             this.CloneTransformFunction = cloneTransformFunction;
         }
@@ -16,7 +20,7 @@ namespace ETLObjects
 
         public override string ToString()
         {
-            return CloneTransformFunction.Method.Name;
+            return "BroadCast";
         }
     }
 }
