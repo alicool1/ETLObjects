@@ -97,11 +97,13 @@ namespace ETLObjects
         /// </summary>
         /// <param name="source"></param>
         /// <param name="dest"></param>
-        public void AddEdge(long source, long dest)
+        public Edge AddEdge(long source, long dest)
         {
             Vertex v = GetVertex(source, null); // finde Knoten v zum Startnamen
             Vertex w = GetVertex(dest, null); // finde Knoten w zum Zielnamen
-            v.edges.Add(new Edge(w, 0)); // fuege Kante (v,w) mit Kosten cost = 0 ein
+            Edge new_edge = new Edge(w, 0);
+            v.edges.Add(new_edge); // fuege Kante (v,w) mit Kosten cost = 0 ein
+            return new_edge;
         }
     }
 }

@@ -24,16 +24,32 @@ namespace ETLObjectsTest {
         TableColumn col2 => new TableColumn("Col2", "nvarchar(50)", allowNulls: true);
         TableColumn col3 => new TableColumn("Col3", "int", allowNulls: true);
 
+        private int counter_RowTransformation1 = 0;
         public string[] RowTransformation1(string[] row)
         {
+            counter_RowTransformation1++;
             row[2] = (Int32.Parse(row[2]) + 100).ToString();
             return row;
         }
 
+        private int counter_RowTransformation2 = 0;
         public string[] RowTransformation2(string[] row)
         {
-            row[2] = (Int32.Parse(row[2]) - 10).ToString();
-            return row;
+            counter_RowTransformation2++;
+            string[] row_copy = new string[row.Length];
+            row.CopyTo(row_copy, 0);
+            row_copy[2] = (Int32.Parse(row_copy[2]) - 10).ToString();
+            return row_copy;
+        }
+
+        private int counter_RowTransformation3 = 0;
+        public string[] RowTransformation3(string[] row)
+        {
+            counter_RowTransformation3++;
+            string[] row_copy = new string[row.Length];
+            row.CopyTo(row_copy, 0);
+            row_copy[2] = (Int32.Parse(row_copy[2]) - 20).ToString();
+            return row_copy;
         }
 
         public string[] CloneTransformation1(string[] row)
@@ -41,9 +57,11 @@ namespace ETLObjectsTest {
             return row;
         }
 
+        private int counter_RowTransformationMany = 0;
         public string[][] RowTransformationMany(string[] row)
         {
-            string[][] manyrows = new string[2][];
+            int many = 2;
+            string[][] manyrows = new string[many][];
 
             manyrows[0] = row;
 
@@ -53,6 +71,7 @@ namespace ETLObjectsTest {
 
             manyrows[1] = row_copy;
 
+            counter_RowTransformationMany = counter_RowTransformationMany + many;
             return manyrows;
         }
         //TODO never used - remove later
@@ -114,22 +133,30 @@ namespace ETLObjectsTest {
             g.GetVertex(11, new RowTransformation<string[]>(RowTransformation2));
             g.GetVertex(10, new Broadcast<string[]>(CloneTransformation1));
             g.GetVertex(12, new RowTransformationMany<string[]>(RowTransformationMany));
+            g.GetVertex(20, new RowTransformation<string[]>(RowTransformation3));
             g.GetVertex(100, destination1);
             g.GetVertex(110, destination2);
 
-            g.AddEdge(0, 1); // connect 0 to 1
-            g.AddEdge(1, 10); // connect 1 to 10
-            g.AddEdge(10, 100);
-            g.AddEdge(10, 11);
-            g.AddEdge(11, 12);
-            g.AddEdge(12, 110);
+            Edge e1 = g.AddEdge(0, 1); // connect 0 to 1
+            Edge e2 = g.AddEdge(1, 10); // connect 1 to 10
+            Edge e3 = g.AddEdge(10, 20);
+            Edge e4 = g.AddEdge(20, 100);
+            Edge e5 = g.AddEdge(10, 11);
+            Edge e6 = g.AddEdge(11, 12);
+            Edge e7 = g.AddEdge(12, 110);
 
-            TestHelper.VisualizeGraph(g);
 
-            
             //DataFlowTask<string[]>.Execute("Test dataflow task", CSVSource, destination1, 3, RowTransformation);
 
             DataFlowTask<string[]>.Execute("Test dataflow task", 1000, 1, g);
+
+            e2.cost = counter_RowTransformation1;
+            e6.cost = counter_RowTransformation2;
+            e4.cost = counter_RowTransformation3;
+
+            e7.cost = counter_RowTransformationMany;
+
+            TestHelper.VisualizeGraph(g);
 
             Assert.AreEqual(4, SqlTask.ExecuteScalar<int>("Check staging table1", string.Format("select count(*) from {0}", destTable1)));
             Assert.AreEqual(8, SqlTask.ExecuteScalar<int>("Check staging table2", string.Format("select count(*) from {0}", destTable2)));                        
