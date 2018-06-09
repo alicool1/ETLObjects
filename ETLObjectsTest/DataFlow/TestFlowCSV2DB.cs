@@ -26,11 +26,13 @@ namespace ETLObjectsTest {
 
         public string[] RowTransformation1(string[] row)
         {
+            row[2] = (Int32.Parse(row[2]) + 100).ToString();
             return row;
         }
 
         public string[] RowTransformation2(string[] row)
         {
+            row[2] = (Int32.Parse(row[2]) - 10).ToString();
             return row;
         }
 
@@ -111,6 +113,7 @@ namespace ETLObjectsTest {
             g.GetVertex(1, new RowTransformation<string[]>(RowTransformation1));
             g.GetVertex(11, new RowTransformation<string[]>(RowTransformation2));
             g.GetVertex(10, new Broadcast<string[]>(CloneTransformation1));
+            g.GetVertex(12, new RowTransformationMany<string[]>(RowTransformationMany));
             g.GetVertex(100, destination1);
             g.GetVertex(110, destination2);
 
@@ -118,7 +121,8 @@ namespace ETLObjectsTest {
             g.AddEdge(1, 10); // connect 1 to 10
             g.AddEdge(10, 100);
             g.AddEdge(10, 11);
-            g.AddEdge(11, 110);
+            g.AddEdge(11, 12);
+            g.AddEdge(12, 110);
 
             TestHelper.VisualizeGraph(g);
 
@@ -128,7 +132,7 @@ namespace ETLObjectsTest {
             DataFlowTask<string[]>.Execute("Test dataflow task", 1000, 1, g);
 
             Assert.AreEqual(4, SqlTask.ExecuteScalar<int>("Check staging table1", string.Format("select count(*) from {0}", destTable1)));
-            Assert.AreEqual(4, SqlTask.ExecuteScalar<int>("Check staging table2", string.Format("select count(*) from {0}", destTable2)));                        
+            Assert.AreEqual(8, SqlTask.ExecuteScalar<int>("Check staging table2", string.Format("select count(*) from {0}", destTable2)));                        
         }
 
 
