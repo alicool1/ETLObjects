@@ -79,13 +79,15 @@
     <Compile Include="Algorithms\Graph\Vertex.cs" />
     <Compile Include="Algorithms\IntervalPoint\IntervalPointSearch.cs" />
     <Compile Include="Algorithms\IntervalPoint\IntervalPoint.cs" />
+    <Compile Include="Definitions\DataFlow\Broadcast.cs" />
     <Compile Include="Definitions\DataFlow\DataReaderToEnumerable.cs" />
     <Compile Include="Definitions\DataFlow\DBSource.cs" />
     <Compile Include="Definitions\DataFlow\EnumerableToDataReader.cs" />
     <Compile Include="Definitions\DataFlow\IDataFlowDestination.cs" />
     <Compile Include="Definitions\DataFlow\IDataFlowSource.cs" />
     <Compile Include="Definitions\DataFlow\IDataFlowTransformation.cs" />
-    <Compile Include="Definitions\DataFlow\RowTransformFunction.cs" />
+    <Compile Include="Definitions\DataFlow\RowTransformationMany.cs" />
+    <Compile Include="Definitions\DataFlow\RowTransformation.cs" />
     <Compile Include="Definitions\Logging\LogEntry.cs" />
     <Compile Include="Helper\StringExtension.cs" />
     <Compile Include="Toolbox\ConnectionManager\AdomdConnectionManager.cs" />

@@ -92,8 +92,8 @@ namespace ETLObjectsTest.DataFlow
             Graph g = new Graph();
             
             g.GetVertex(0, DBSource );
-            g.GetVertex(1, new RowTransformFunction<Datensatz>(RowTransformationDB));
-            g.GetVertex(2, new RowTransformFunction<Datensatz>(RowTransformationDB2));
+            g.GetVertex(1, new RowTransformation<Datensatz>(RowTransformationDB));
+            g.GetVertex(2, new RowTransformation<Datensatz>(RowTransformationDB2));
             g.GetVertex(3, destination );
 
             g.AddEdge(0, 1); // connect 0 to 1

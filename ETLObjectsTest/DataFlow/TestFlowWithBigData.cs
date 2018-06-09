@@ -211,7 +211,7 @@ end
             Graph g = new Graph();
 
             g.GetVertex(0, DBSource);
-            g.GetVertex(1, new RowTransformFunction<Datensatz>(RowTransformationDB));
+            g.GetVertex(1, new RowTransformation<Datensatz>(RowTransformationDB));
             g.GetVertex(2, Ziel_Schreibe);
 
             g.AddEdge(0, 1); // connect 0 to 1

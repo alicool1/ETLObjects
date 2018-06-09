@@ -24,11 +24,35 @@ namespace ETLObjectsTest {
         TableColumn col2 => new TableColumn("Col2", "nvarchar(50)", allowNulls: true);
         TableColumn col3 => new TableColumn("Col3", "int", allowNulls: true);
 
-        public string[] RowTransformation(string[] row)
+        public string[] RowTransformation1(string[] row)
         {
             return row;
         }
 
+        public string[] RowTransformation2(string[] row)
+        {
+            return row;
+        }
+
+        public string[] CloneTransformation1(string[] row)
+        {
+            return row;
+        }
+
+        public string[][] RowTransformationMany(string[] row)
+        {
+            string[][] manyrows = new string[2][];
+
+            manyrows[0] = row;
+
+            string[] row_copy = new string[row.Length];
+            row.CopyTo(row_copy, 0);
+            row_copy[0] = "CopyOf" + row_copy[0];
+
+            manyrows[1] = row_copy;
+
+            return manyrows;
+        }
         //TODO never used - remove later
         //public InMemoryTable BatchTransformation(string[][] batch)
         //{
@@ -58,16 +82,25 @@ namespace ETLObjectsTest {
 
 
         [TestMethod]
-        public void TestSimpleDataflow() {
+        public void TestSampleDataflow() {
 
-            string destTable = "test.Staging";
-            CreateTableTask.Create(destTable, new List<TableColumn>() {keyCol, col1, col2, col3});
+            string destTable1 = "test.Staging1";
+            CreateTableTask.Create(destTable1, new List<TableColumn>() {keyCol, col1, col2, col3});
 
-            DBDestination<string[]> destination = new DBDestination<string[]>();
-            destination.TableName_Target = destTable;
-            destination.FieldCount = 4;
-            destination.ObjectMappingMethod = WriterAdapter.Fill;
-            destination.Connection = ControlFlow.CurrentDbConnection;
+            DBDestination<string[]> destination1 = new DBDestination<string[]>();
+            destination1.TableName_Target = destTable1;
+            destination1.FieldCount = 4;
+            destination1.ObjectMappingMethod = WriterAdapter.Fill;
+            destination1.Connection = ControlFlow.CurrentDbConnection;
+
+            string destTable2 = "test.Staging2";
+            CreateTableTask.Create(destTable2, new List<TableColumn>() { keyCol, col1, col2, col3 });
+
+            DBDestination<string[]> destination2 = new DBDestination<string[]>();
+            destination2.TableName_Target = destTable2;
+            destination2.FieldCount = 4;
+            destination2.ObjectMappingMethod = WriterAdapter.Fill;
+            destination2.Connection = ControlFlow.CurrentDbConnection;
 
             CSVSource<string[]> CSVSource = 
                 new CSVSource<string[]>("DataFlow/InputData.csv");
@@ -75,21 +108,27 @@ namespace ETLObjectsTest {
             Graph g = new Graph();
 
             g.GetVertex(0, CSVSource);
-            g.GetVertex(1, new RowTransformFunction<string[]>(RowTransformation));
-            g.GetVertex(2, destination);
+            g.GetVertex(1, new RowTransformation<string[]>(RowTransformation1));
+            g.GetVertex(11, new RowTransformation<string[]>(RowTransformation2));
+            g.GetVertex(10, new Broadcast<string[]>(CloneTransformation1));
+            g.GetVertex(100, destination1);
+            g.GetVertex(110, destination2);
 
             g.AddEdge(0, 1); // connect 0 to 1
-            g.AddEdge(1, 2); // connect 1 to 2
+            g.AddEdge(1, 10); // connect 1 to 10
+            g.AddEdge(10, 100);
+            g.AddEdge(10, 11);
+            g.AddEdge(11, 110);
 
+            TestHelper.VisualizeGraph(g);
 
-            //TestHelper.VisualizeGraph(g);
+            
+            //DataFlowTask<string[]>.Execute("Test dataflow task", CSVSource, destination1, 3, RowTransformation);
 
-            //DataFlowTask<string[]>.Execute("Test dataflow task", CSVSource, Ziel_Schreibe, 3, RowTransformation, BatchTransformation);
+            DataFlowTask<string[]>.Execute("Test dataflow task", 1000, 1, g);
 
-            DataFlowTask<string[]>.Execute("Test dataflow task", 10000, 1, g);
-
-
-            Assert.AreEqual(4, SqlTask.ExecuteScalar<int>("Check staging table", string.Format("select count(*) from {0}", destTable)));                        
+            Assert.AreEqual(4, SqlTask.ExecuteScalar<int>("Check staging table1", string.Format("select count(*) from {0}", destTable1)));
+            Assert.AreEqual(4, SqlTask.ExecuteScalar<int>("Check staging table2", string.Format("select count(*) from {0}", destTable2)));                        
         }
 
 

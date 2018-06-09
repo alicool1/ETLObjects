@@ -18,7 +18,7 @@ namespace ETLObjects
             InitalizeAllNodes(g, allVerticesInGraph);
             DetermineGrades(g);
 
-            bool MindEinEingangsGradNull = DoCrazySorting(g, result, allVerticesInGraph, ref stufeKnoten);
+            bool MindEinEingangsGradNull = DoTopologicalSorting(g, result, allVerticesInGraph, ref stufeKnoten);
 
             if (allVerticesInGraph.Count > 0 && !MindEinEingangsGradNull)
                foreach (Vertex w in allVerticesInGraph.Keys) w.zirkelBestandteil = true;
@@ -43,7 +43,7 @@ namespace ETLObjects
                 foreach (Edge e in v.edges) // fuer jeden Nachbarknoten
                     e.dest.indegree++; // erhoehe seinen Eingangsgrad um 1
         }
-        private static bool DoCrazySorting(Graph g, Dictionary<long, int?> result, Dictionary<Vertex, bool> allVerticesInGraph, ref int stufeKnoten)
+        private static bool DoTopologicalSorting(Graph g, Dictionary<long, int?> result, Dictionary<Vertex, bool> allVerticesInGraph, ref int stufeKnoten)
         {
             List<Vertex> l = new List<Vertex>(); // Liste von Knoten, die inzwischen den Eingangsgrad 0 haben
 
