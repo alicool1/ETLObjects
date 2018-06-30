@@ -85,7 +85,7 @@ namespace ETLObjects
 
             // the algorithm for topological sorting is required 
             // for the chronological order in the DataFlow-Pipeline
-            DoALotOfChecksAndSomeRealStuff(WatingForCompletitionCollection, ToCompleteCollection, DataFlowReaderCollection);
+            InterpreteGraph(WatingForCompletitionCollection, ToCompleteCollection, DataFlowReaderCollection);
 
             DoDataFlowReaderCollection(DataFlowReaderCollection);
 
@@ -94,10 +94,19 @@ namespace ETLObjects
             WaitForCompletionOrEndWithException(WatingForCompletitionCollection);
         }
 
-       
 
-        private void DoALotOfChecksAndSomeRealStuff(List<object> WatingForCompletitionCollection, List<object> ToCompleteCollection, Dictionary<IDataFlowSource<DS>, object> DataFlowReaderCollection)
+        /// <summary>
+        /// InterpreteGraph loops over all vertices and over all edges of each vertex.
+        /// The edges are directed, so each edge has a source-vertex and a destination-vertex.
+        /// The edges are beeing translated to TPL-DataFlow-Objects, so a TPL-DataFlow is going generated and executed during Run-Time. 
+        /// </summary>
+        /// <param name="WatingForCompletitionCollection"></param>
+        /// <param name="ToCompleteCollection"></param>
+        /// <param name="DataFlowReaderCollection"></param>
+        private void InterpreteGraph(List<object> WatingForCompletitionCollection, List<object> ToCompleteCollection, Dictionary<IDataFlowSource<DS>, object> DataFlowReaderCollection)
         {
+            // the algorithm for topological sorting is required 
+            // for the chronological order in the TPL-DataFlow-Pipeline
             foreach (long i in TopoSort.SortGraph(g).Keys)
             {
                 Vertex v_source = g.GetVertex(i, null);
