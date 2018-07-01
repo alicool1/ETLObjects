@@ -14,9 +14,9 @@ namespace ETLObjects
         }
         public BroadCast(Func<DS, DS> cloneTransformFunction)
         {
-            this.CloneTransformFunction = cloneTransformFunction;
+            this.TransformFunction = cloneTransformFunction;
         }
-        public Func<DS, DS> CloneTransformFunction { get; set; }
+        public Func<DS, DS> TransformFunction { get; set; }
 
         public override string ToString()
         {

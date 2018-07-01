@@ -115,9 +115,27 @@ namespace ETLObjects
                 {
                     Vertex v_dest = e.dest;
 
+
                     // for case that object in vertex is missing
                     if (v_source.BenutzerObjekte == null || v_source.BenutzerObjekte[0] == null)
                         throw new Exception(string.Format("Vertex needs any object. For example an IDataFlowSource."));
+
+                    // GeneratePipeline_Transformation_to_Transformation
+                    // for the case that v_source AND v_dest are type of IDataFlowTransformation
+                    if (new List<Type>(new Type[] { typeof(RowTransformation<DS>), typeof(RowTransformationMany<DS>), typeof(BroadCast<DS>) }).Contains(v_source.BenutzerObjekte[0].GetType())
+                        && new List<Type>(new Type[] { typeof(RowTransformation<DS>), typeof(RowTransformationMany<DS>), typeof(BroadCast<DS>) }).Contains(v_dest.BenutzerObjekte[0].GetType()))
+                    {
+                        GeneratePipeline_Transformation_to_Transformation(v_source, v_dest, ToCompleteCollection, WatingForCompletitionCollection);
+                    }
+
+
+                    // .. GeneratePipeline_DataFlowSource_to_Transformation
+                    // .. GeneratePipeline_Transformation_to_DataFlowDestination
+                    // .. GeneratePipeline_DataFlowSource_to_DataFlowDestination
+
+
+
+
                     // for case that v_source is type of IDataFlowSource
                     else if (new List<Type>(new Type[] { typeof(CSVSource<DS>), typeof(DBSource<DS>) }).Contains(v_source.BenutzerObjekte[0].GetType()))
                     {
@@ -167,57 +185,8 @@ namespace ETLObjects
                             bacthBlock.Completion.ContinueWith(t => { DataFlowDestinationBlock.Complete(); });
 
                             WatingForCompletitionCollection.Add(DataFlowDestinationBlock);
-                        }
-                        // for case that v_source is type of RowTransformFunction
-                        // AND that v_dest is type of RowTransformFunction
-                        else if (v_dest.BenutzerObjekte[0].GetType() == typeof(RowTransformation<DS>))
-                        {
-                            TransformBlock<DS, DS> t_b_source = (TransformBlock<DS, DS>)v_source.BenutzerObjekte[1];
-
-                            RowTransformation<DS> tr = (RowTransformation<DS>)v_dest.BenutzerObjekte[0];
-                            TransformBlock<DS, DS> t_b_dest = new TransformBlock<DS, DS>(tr.RowTransformFunction
-                                , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
-                            ToCompleteCollection.Add(t_b_dest);
-                            v_dest.BenutzerObjekte.Add(t_b_dest);
-
-                            t_b_source.LinkTo(t_b_dest);
-                            t_b_source.Completion.ContinueWith(t => { t_b_dest.Complete(); });
-                            WatingForCompletitionCollection.Add(t_b_dest);
-                        }
-                        // for case that v_source is type of RowTransformFunction
-                        // AND that v_dest is type of RowTransformMany
-                        else if (v_dest.BenutzerObjekte[0].GetType() == typeof(RowTransformationMany<DS>))
-                        {
-                           
-
-                            TransformBlock<DS, DS> t_b_source = (TransformBlock<DS, DS>)v_source.BenutzerObjekte[1];
-
-                            RowTransformationMany<DS> t_many = (RowTransformationMany<DS>)v_dest.BenutzerObjekte[0];
-                            TransformManyBlock<DS, DS> broadcastBlock = new TransformManyBlock<DS, DS>(t_many.RowTransformManyFunction
-                                , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
-                            ToCompleteCollection.Add(broadcastBlock);
-                            v_dest.BenutzerObjekte.Add(broadcastBlock);
-
-                            t_b_source.LinkTo(broadcastBlock);
-                            t_b_source.Completion.ContinueWith(t => { broadcastBlock.Complete(); });
-                            WatingForCompletitionCollection.Add(broadcastBlock);
-                        }
-                        // for case that v_source is type of RowTransformFunction
-                        // AND that v_dest is type of Broadcast
-                        else if (v_dest.BenutzerObjekte[0].GetType() == typeof(BroadCast<DS>))
-                        {
-                            TransformBlock<DS, DS> t_b_source = (TransformBlock<DS, DS>)v_source.BenutzerObjekte[1];
-                            
-                            BroadCast<DS> t_broadcast = (BroadCast<DS>)v_dest.BenutzerObjekte[0];
-                            BroadcastBlock<DS> broadcastBlock = new BroadcastBlock<DS>(null
-                                , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
-                            ToCompleteCollection.Add(broadcastBlock);
-                            v_dest.BenutzerObjekte.Add(broadcastBlock);
-
-                            t_b_source.LinkTo(broadcastBlock);
-                            t_b_source.Completion.ContinueWith(t => { broadcastBlock.Complete(); });
-                            WatingForCompletitionCollection.Add(broadcastBlock);
-                        }
+                        }   
+                        
                         // for case that type is not implemented
                         else
                         {
@@ -247,22 +216,6 @@ namespace ETLObjects
                             t_b.Completion.ContinueWith(t => { bacthBlock.Complete(); });
                             bacthBlock.Completion.ContinueWith(t => { DataFlowDestinationBlock.Complete(); });
                             WatingForCompletitionCollection.Add(DataFlowDestinationBlock);
-                        }
-                        // for case that v_source is type of RowTransformMany
-                        // AND that v_dest is type of RowTransformFunction
-                        else if (v_dest.BenutzerObjekte[0].GetType() == typeof(RowTransformation<DS>))
-                        {
-                            TransformManyBlock<DS, DS> t_b_source = (TransformManyBlock<DS, DS>)v_source.BenutzerObjekte[1];
-
-                            RowTransformation<DS> tr = (RowTransformation<DS>)v_dest.BenutzerObjekte[0];
-                            TransformBlock<DS, DS> t_b_dest = new TransformBlock<DS, DS>(tr.RowTransformFunction
-                                , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
-                            ToCompleteCollection.Add(t_b_dest);
-                            v_dest.BenutzerObjekte.Add(t_b_dest);
-
-                            t_b_source.LinkTo(t_b_dest);
-                            t_b_source.Completion.ContinueWith(t => { t_b_dest.Complete(); });
-                            WatingForCompletitionCollection.Add(t_b_dest);
                         }
                         // for case that type is not implemented
                         else
@@ -294,22 +247,6 @@ namespace ETLObjects
                             bacthBlock.Completion.ContinueWith(t => { DataFlowDestinationBlock.Complete(); });
                             WatingForCompletitionCollection.Add(DataFlowDestinationBlock);
                         }
-                        // for case that v_source is type of Broadcast
-                        // AND that v_dest is type of RowTransformation
-                        else if (v_dest.BenutzerObjekte[0].GetType() == typeof(RowTransformation<DS>))
-                        {
-                            BroadcastBlock<DS> t_b_source = (BroadcastBlock<DS>)v_source.BenutzerObjekte[1];
-
-                            RowTransformation<DS> tr = (RowTransformation<DS>)v_dest.BenutzerObjekte[0];
-                            TransformBlock<DS, DS> t_b_dest = new TransformBlock<DS, DS>(tr.RowTransformFunction
-                                , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
-                            ToCompleteCollection.Add(t_b_dest);
-                            v_dest.BenutzerObjekte.Add(t_b_dest);
-
-                            t_b_source.LinkTo(t_b_dest);
-                            t_b_source.Completion.ContinueWith(t => { t_b_dest.Complete(); });
-                            WatingForCompletitionCollection.Add(t_b_dest);
-                        }
                         // for case that type is not implemented
                         else
                         {
@@ -324,6 +261,53 @@ namespace ETLObjects
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// GeneratePipeline_Transformation_to_Transformation generates a TPL-DataFlowPipeline betwenn two vertices of a graph.
+        /// v_source.BenutzerObjekte[0] and v_dest.BenutzerObjekte[0] has to be Type of IDataFlowTransformation - so its a pipeline between two transformations.
+        /// </summary>
+        /// <param name="v_source"></param>
+        /// <param name="v_dest"></param>
+        /// <param name="ToCompleteCollection"></param>
+        /// <param name="WatingForCompletitionCollection"></param>
+        private void GeneratePipeline_Transformation_to_Transformation(Vertex v_source, Vertex v_dest, List<object> ToCompleteCollection, List<object> WatingForCompletitionCollection)
+        {
+            var t_b_source = (IPropagatorBlock<DS, DS>)v_source.BenutzerObjekte[1];
+            var t_b_dest = (IPropagatorBlock<DS, DS>)null;
+
+
+            if (v_dest.BenutzerObjekte[0].GetType() == typeof(RowTransformation<DS>))
+            {
+                RowTransformation<DS> tr = (RowTransformation<DS>)v_dest.BenutzerObjekte[0];
+                t_b_dest = new TransformBlock<DS, DS>(tr.RowTransformFunction
+                , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
+            }
+            else if (v_dest.BenutzerObjekte[0].GetType() == typeof(RowTransformationMany<DS>))
+            {
+                RowTransformationMany<DS> t_many = (RowTransformationMany<DS>)v_dest.BenutzerObjekte[0];
+                t_b_dest = new TransformManyBlock<DS, DS>(t_many.RowTransformManyFunction
+                    , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
+
+            }
+            else if (v_dest.BenutzerObjekte[0].GetType() == typeof(BroadCast<DS>))
+            {
+                BroadCast<DS> t_broadcast = (BroadCast<DS>)v_dest.BenutzerObjekte[0];
+                t_b_dest = new BroadcastBlock<DS>(null
+                    , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
+            }
+
+            else throw new Exception("Not implemented Type for Destination in GeneratePipeline_Transformation_to_Transformation().");
+
+            ToCompleteCollection.Add(t_b_dest);
+            v_dest.BenutzerObjekte.Add(t_b_dest);
+
+            t_b_source.LinkTo(t_b_dest);
+            t_b_source.Completion.ContinueWith(t => { t_b_dest.Complete(); });
+
+
+            WatingForCompletitionCollection.Add(t_b_dest);
+
         }
 
         private void DoTransformOrThrowAnExceptionBecauseThereIsMoreToCheck(List<object> ToCompleteCollection)
