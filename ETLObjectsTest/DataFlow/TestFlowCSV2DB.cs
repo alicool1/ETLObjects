@@ -5,7 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Data;
 
-namespace ETLObjectsTest {
+namespace ETLObjectsTest.DataFlow
+{
     [TestClass]
     public class TestFlowCSV2DB {
         public TestContext TestContext { get; set; }
@@ -74,21 +75,7 @@ namespace ETLObjectsTest {
             counter_RowTransformationMany = counter_RowTransformationMany + many;
             return manyrows;
         }
-        //TODO never used - remove later
-        //public InMemoryTable BatchTransformation(string[][] batch)
-        //{
-        //    InMemoryTable table = new InMemoryTable();
-        //    table.HasIdentityColumn = true;
-        //    table.Columns.Add(new InMemoryColumn(col1));
-        //    table.Columns.Add(new InMemoryColumn(col2));
-        //    table.Columns.Add(new InMemoryColumn(col3));
-
-        //    foreach (string[] row in batch)
-        //        table.Rows.Add(row);
-        //    return table;
-
-        //}
-
+       
         public class WriterAdapter
         {
             public static object[] Fill(string[] Datensatz)
@@ -131,7 +118,7 @@ namespace ETLObjectsTest {
             g.GetVertex(0, CSVSource);
             g.GetVertex(1, new RowTransformation<string[]>(RowTransformation1));
             g.GetVertex(11, new RowTransformation<string[]>(RowTransformation2));
-            g.GetVertex(10, new BroadCast<string[]>());
+            g.GetVertex(10, new BroadCast<string[]>(CloneTransformation1));
             g.GetVertex(12, new RowTransformationMany<string[]>(RowTransformationMany));
             g.GetVertex(20, new RowTransformation<string[]>(RowTransformation3));
             g.GetVertex(100, destination1);
@@ -145,8 +132,6 @@ namespace ETLObjectsTest {
             Edge e6 = g.AddEdge(11, 12);
             Edge e7 = g.AddEdge(12, 110);
 
-
-            //DataFlowTask<string[]>.Execute("Test dataflow task", CSVSource, destination1, 3, RowTransformation);
 
             DataFlowTask<string[]>.Execute("Test dataflow task", 1000, 1, g);
 

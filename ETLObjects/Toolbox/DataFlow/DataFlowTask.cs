@@ -75,22 +75,23 @@ namespace ETLObjects
 
         }
 
-        public void Execute_Graph()
+        public override void Execute()
         {
             List<object> WatingForCompletitionCollection = new List<object>();
             List<object> ToCompleteCollection = new List<object>();
             Dictionary<IDataFlowSource<DS>, object> DataFlowReaderCollection = new Dictionary<IDataFlowSource<DS>, object>();
 
-            //TODO All Checks should be done before any real calculations or so happens 
-
             // the algorithm for topological sorting is required 
             // for the chronological order in the DataFlow-Pipeline
             InterpreteGraph(WatingForCompletitionCollection, ToCompleteCollection, DataFlowReaderCollection);
 
-            DoDataFlowReaderCollection(DataFlowReaderCollection);
+            // begin to read all readers
+            DataFlowReadersExecute(DataFlowReaderCollection);
 
-            DoTransformOrThrowAnExceptionBecauseThereIsMoreToCheck(ToCompleteCollection);
+            // complete all blocks
+            DataFlowBlockComplete(ToCompleteCollection);
 
+            // wait for completition
             WaitForCompletionOrEndWithException(WatingForCompletitionCollection);
         }
 
@@ -115,156 +116,53 @@ namespace ETLObjects
                 {
                     Vertex v_dest = e.dest;
 
-
                     // for case that object in vertex is missing
                     if (v_source.BenutzerObjekte == null || v_source.BenutzerObjekte[0] == null)
                         throw new Exception(string.Format("Vertex needs any object. For example an IDataFlowSource."));
 
                     // GeneratePipeline_Transformation_to_Transformation
                     // for the case that v_source AND v_dest are type of IDataFlowTransformation
-                    if (new List<Type>(new Type[] { typeof(RowTransformation<DS>), typeof(RowTransformationMany<DS>), typeof(BroadCast<DS>) }).Contains(v_source.BenutzerObjekte[0].GetType())
+                    else if (new List<Type>(new Type[] { typeof(RowTransformation<DS>), typeof(RowTransformationMany<DS>), typeof(BroadCast<DS>) }).Contains(v_source.BenutzerObjekte[0].GetType())
                         && new List<Type>(new Type[] { typeof(RowTransformation<DS>), typeof(RowTransformationMany<DS>), typeof(BroadCast<DS>) }).Contains(v_dest.BenutzerObjekte[0].GetType()))
                     {
                         GeneratePipeline_Transformation_to_Transformation(v_source, v_dest, ToCompleteCollection, WatingForCompletitionCollection);
                     }
 
-
-                    // .. GeneratePipeline_DataFlowSource_to_Transformation
-                    // .. GeneratePipeline_Transformation_to_DataFlowDestination
-                    // .. GeneratePipeline_DataFlowSource_to_DataFlowDestination
-
-
-
-
-                    // for case that v_source is type of IDataFlowSource
-                    else if (new List<Type>(new Type[] { typeof(CSVSource<DS>), typeof(DBSource<DS>) }).Contains(v_source.BenutzerObjekte[0].GetType()))
+                    // GeneratePipeline_DataFlowSource_to_Transformation
+                    // for the case that v_source is type of IDataFlowSource AND v_dest is type of IDataFlowTransformation
+                    else if (new List<Type>(new Type[] { typeof(CSVSource<DS>), typeof(DBSource<DS>) }).Contains(v_source.BenutzerObjekte[0].GetType())
+                        && new List<Type>(new Type[] { typeof(RowTransformation<DS>), typeof(RowTransformationMany<DS>), typeof(BroadCast<DS>) }).Contains(v_dest.BenutzerObjekte[0].GetType()))
                     {
-                        IDataFlowSource<DS> source = (IDataFlowSource<DS>)v_source.BenutzerObjekte[0];
-
-                        // for case that object in vertex is missing
-                        if (v_dest.BenutzerObjekte == null || v_dest.BenutzerObjekte[0] == null)
-                            throw new Exception(string.Format("Vertex needs any object. For example DBDestination."));
-                        // for case that v_source is type of IDataFlowSource
-                        // AND that v_dest is type of RowTransformFunction
-                        else if (v_dest.BenutzerObjekte[0].GetType() == typeof(RowTransformation<DS>))
-                        {
-                            RowTransformation<DS> t = (RowTransformation<DS>)v_dest.BenutzerObjekte[0];
-                            TransformBlock<DS, DS> t_b = new TransformBlock<DS, DS>(t.RowTransformFunction
-                                , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
-                            ToCompleteCollection.Add(t_b);
-                            v_dest.BenutzerObjekte.Add(t_b);
-                            DataFlowReaderCollection.Add(source, t_b);
-                        }
-                        // for case that type is not implemented
-                        else
-                        {
-                            throw new Exception(string.Format("Type {0} is not implemented.", v_dest.BenutzerObjekte[0].GetType()));
-                        }
+                        GeneratePipeline_DataFlowSource_to_Transformation(v_source, v_dest, ToCompleteCollection, WatingForCompletitionCollection, DataFlowReaderCollection);
                     }
-                    // for case that v_source is type of RowTransformFunction
-                    else if (v_source.BenutzerObjekte[0].GetType() == typeof(RowTransformation<DS>))
+
+
+                    // GeneratePipeline_Transformation_to_DataFlowDestination
+                    // for the case that v_source is type of IDataFlowTransformation AND v_dest is type of IDataFlowDestination
+                    else if (new List<Type>(new Type[] { typeof(RowTransformation<DS>), typeof(RowTransformationMany<DS>), typeof(BroadCast<DS>) }).Contains(v_source.BenutzerObjekte[0].GetType())
+                        && new List<Type>(new Type[] { typeof(DBDestination<DS>) }).Contains(v_dest.BenutzerObjekte[0].GetType()))
                     {
-
-                        // for case that v_source is type of RowTransformFunction
-                        // AND that v_dest is type of IDataFlowDestination
-                        if (new List<Type>(new Type[] { typeof(DBDestination<DS>) }).Contains(v_dest.BenutzerObjekte[0].GetType()))
-                        {
-                            IDataFlowDestination<DS> dest = (IDataFlowDestination<DS>)v_dest.BenutzerObjekte[0];
-                            //using (dest) // TODO Schnittstelle fehlt
-                            //{
-                            dest.Open();
-
-                            var bacthBlock = new BatchBlock<DS>(BatchSize);
-                            var DataFlowDestinationBlock = new ActionBlock<DS[]>(outp => dest.WriteBatch(outp));
-
-                            TransformBlock<DS, DS> t_b = (TransformBlock<DS, DS>)v_source.BenutzerObjekte[1];
-                            t_b.LinkTo(bacthBlock);
-                            bacthBlock.LinkTo(DataFlowDestinationBlock);
-
-                            t_b.Completion.ContinueWith(t => { bacthBlock.Complete(); });
-                            bacthBlock.Completion.ContinueWith(t => { DataFlowDestinationBlock.Complete(); });
-
-                            WatingForCompletitionCollection.Add(DataFlowDestinationBlock);
-                        }   
-                        
-                        // for case that type is not implemented
-                        else
-                        {
-                            throw new Exception(string.Format("Type {0} is not implemented.", v_dest.BenutzerObjekte[0].GetType()));
-
-                        }
+                        GeneratePipeline_Transformation_to_DataFlowDestination(v_source, v_dest, ToCompleteCollection, WatingForCompletitionCollection);
                     }
-                    // for case that v_source is type of RowTransformMany
-                    else if (v_source.BenutzerObjekte[0].GetType() == typeof(RowTransformationMany<DS>))
+
+                    // GeneratePipeline_DataFlowSource_to_DataFlowDestination
+                    // for the case that v_source is type of IDataFlowSource AND v_dest is type of IDataFlowDestination
+                    else if (new List<Type>(new Type[] { typeof(CSVSource<DS>), typeof(DBSource<DS>) }).Contains(v_source.BenutzerObjekte[0].GetType())
+                        && new List<Type>(new Type[] { typeof(DBDestination<DS>) }).Contains(v_dest.BenutzerObjekte[0].GetType()))
                     {
-                        // for case that v_source is type of RowTransformMany
-                        // AND that v_dest is type of IDataFlowDestination
-                        if (new List<Type>(new Type[] { typeof(DBDestination<DS>) }).Contains(v_dest.BenutzerObjekte[0].GetType()))
-                        {
-                            IDataFlowDestination<DS> dest = (IDataFlowDestination<DS>)v_dest.BenutzerObjekte[0];
-                            //using (dest) // TODO Schnittstelle fehlt
-                            //{
-                            dest.Open();
-                            
-                            var bacthBlock = new BatchBlock<DS>(BatchSize);
-                            var DataFlowDestinationBlock = new ActionBlock<DS[]>(outp => dest.WriteBatch(outp));
-
-                            TransformManyBlock<DS, DS> t_b = (TransformManyBlock<DS, DS>)v_source.BenutzerObjekte[1];
-                            t_b.LinkTo(bacthBlock);
-                            bacthBlock.LinkTo(DataFlowDestinationBlock);
-
-                            t_b.Completion.ContinueWith(t => { bacthBlock.Complete(); });
-                            bacthBlock.Completion.ContinueWith(t => { DataFlowDestinationBlock.Complete(); });
-                            WatingForCompletitionCollection.Add(DataFlowDestinationBlock);
-                        }
-                        // for case that type is not implemented
-                        else
-                        {
-                            throw new Exception(string.Format("Type {0} is not implemented.", v_dest.BenutzerObjekte[0].GetType()));
-
-                        }
+                        GeneratePipeline_DataFlowSource_to_DataFlowDestination(v_source, v_dest, ToCompleteCollection, WatingForCompletitionCollection, DataFlowReaderCollection);
                     }
-                    // for case that v_source is type of Broadcast
-                    else if (v_source.BenutzerObjekte[0].GetType() == typeof(BroadCast<DS>))
-                    {
-                        // for case that v_source is type of Broadcast
-                        // AND that v_dest is type of IDataFlowDestination
-                        if (new List<Type>(new Type[] { typeof(DBDestination<DS>) }).Contains(v_dest.BenutzerObjekte[0].GetType()))
-                        {
-                            IDataFlowDestination<DS> dest = (IDataFlowDestination<DS>)v_dest.BenutzerObjekte[0];
-                            //using (dest) // TODO Schnittstelle fehlt
-                            //{
-                            dest.Open();
 
-                            var bacthBlock = new BatchBlock<DS>(BatchSize);
-                            var DataFlowDestinationBlock = new ActionBlock<DS[]>(outp => dest.WriteBatch(outp));
-
-                            BroadcastBlock<DS> t_b = (BroadcastBlock<DS>)v_source.BenutzerObjekte[1];
-                            t_b.LinkTo(bacthBlock);
-                            bacthBlock.LinkTo(DataFlowDestinationBlock);
-
-                            t_b.Completion.ContinueWith(t => { bacthBlock.Complete(); });
-                            bacthBlock.Completion.ContinueWith(t => { DataFlowDestinationBlock.Complete(); });
-                            WatingForCompletitionCollection.Add(DataFlowDestinationBlock);
-                        }
-                        // for case that type is not implemented
-                        else
-                        {
-                            throw new Exception(string.Format("Type {0} is not implemented.", v_dest.BenutzerObjekte[0].GetType()));
-
-                        }
-                    }
-                    // for case that type is not implemented
                     else
                     {
-                        throw new Exception(string.Format("Type {0} is not implemented.", v_source.BenutzerObjekte[0].GetType()));
+                        throw new Exception("Not implemented type in InterpreteGraph.");
                     }
                 }
             }
         }
 
         /// <summary>
-        /// GeneratePipeline_Transformation_to_Transformation generates a TPL-DataFlowPipeline betwenn two vertices of a graph.
+        /// GeneratePipeline_Transformation_to_Transformation generates a TPL-DataFlowPipeline between two vertices of a graph.
         /// v_source.BenutzerObjekte[0] and v_dest.BenutzerObjekte[0] has to be Type of IDataFlowTransformation - so its a pipeline between two transformations.
         /// </summary>
         /// <param name="v_source"></param>
@@ -293,7 +191,7 @@ namespace ETLObjects
             else if (v_dest.BenutzerObjekte[0].GetType() == typeof(BroadCast<DS>))
             {
                 BroadCast<DS> t_broadcast = (BroadCast<DS>)v_dest.BenutzerObjekte[0];
-                t_b_dest = new BroadcastBlock<DS>(null
+                t_b_dest = new BroadcastBlock<DS>(t_broadcast.TransformFunction
                     , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
             }
 
@@ -305,12 +203,145 @@ namespace ETLObjects
             t_b_source.LinkTo(t_b_dest);
             t_b_source.Completion.ContinueWith(t => { t_b_dest.Complete(); });
 
-
             WatingForCompletitionCollection.Add(t_b_dest);
 
         }
 
-        private void DoTransformOrThrowAnExceptionBecauseThereIsMoreToCheck(List<object> ToCompleteCollection)
+
+        /// <summary>
+        /// GeneratePipeline_DataFlowSource_to_Transformation generates a TPL-DataFlowPipeline between two vertices of a graph.
+        /// v_source.BenutzerObjekte[0] has to be Type of IDataFlowSource
+        /// v_dest.BenutzerObjekte[0] has to be Type of IDataFlowTransformation
+        /// </summary>
+        /// <param name="v_source"></param>
+        /// <param name="v_dest"></param>
+        /// <param name="ToCompleteCollection"></param>
+        /// <param name="WatingForCompletitionCollection"></param>
+        private void GeneratePipeline_DataFlowSource_to_Transformation(Vertex v_source, Vertex v_dest, List<object> ToCompleteCollection, List<object> WatingForCompletitionCollection, Dictionary<IDataFlowSource<DS>, object> DataFlowReaderCollection)
+        {
+
+            var t_b_source = (IDataFlowSource<DS>)v_source.BenutzerObjekte[0];
+            var t_b_dest = (IPropagatorBlock<DS, DS>)null;
+
+            // for case that object in vertex is missing
+            if (v_dest.BenutzerObjekte == null || v_dest.BenutzerObjekte[0] == null)
+                throw new Exception(string.Format("Vertex needs any object. For example DBDestination."));
+            // for case that v_dest is type of RowTransformFunction
+            else if (v_dest.BenutzerObjekte[0].GetType() == typeof(RowTransformation<DS>))
+            {
+                RowTransformation<DS> t = (RowTransformation<DS>)v_dest.BenutzerObjekte[0];
+                t_b_dest = new TransformBlock<DS, DS>(t.RowTransformFunction
+                    , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
+            }
+            // for case that v_dest is type of RowTransformationMany
+            else if (v_dest.BenutzerObjekte[0].GetType() == typeof(RowTransformationMany<DS>))
+            {
+                RowTransformationMany<DS> t_many = (RowTransformationMany<DS>)v_dest.BenutzerObjekte[0];
+                t_b_dest = new TransformManyBlock<DS, DS>(t_many.RowTransformManyFunction
+                    , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
+            }
+            // for case that v_dest is type of RowTransformationMany
+            else if (v_dest.BenutzerObjekte[0].GetType() == typeof(BroadCast<DS>))
+            {
+                BroadCast<DS> t_broadcast = (BroadCast<DS>)v_dest.BenutzerObjekte[0];
+                t_b_dest = new BroadcastBlock<DS>(t_broadcast.TransformFunction
+                        , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
+            }
+            // for case that type is not implemented
+            else
+            {
+                throw new Exception(string.Format("Type {0} is not implemented.", v_dest.BenutzerObjekte[0].GetType()));
+            }
+
+            ToCompleteCollection.Add(t_b_dest);
+            v_dest.BenutzerObjekte.Add(t_b_dest);
+            DataFlowReaderCollection.Add(t_b_source, t_b_dest);
+        }
+
+        /// <summary>
+        /// GeneratePipeline_Transformation_to_DataFlowDestination generates a TPL-DataFlowPipeline between two vertices of a graph.
+        /// v_source.BenutzerObjekte[0] has to be Type of IDataFlowTransformation
+        /// v_dest.BenutzerObjekte[0] has to be Type of IDataFlowDestination
+        /// /// </summary>
+        /// <param name="v_source"></param>
+        /// <param name="v_dest"></param>
+        /// <param name="ToCompleteCollection"></param>
+        /// <param name="WatingForCompletitionCollection"></param>
+        private void GeneratePipeline_Transformation_to_DataFlowDestination(Vertex v_source, Vertex v_dest, List<object> ToCompleteCollection, List<object> WatingForCompletitionCollection)
+        {
+            var t_b_source = (IPropagatorBlock<DS, DS>)v_source.BenutzerObjekte[1];
+            
+            IDataFlowDestination<DS> dest = (IDataFlowDestination<DS>)v_dest.BenutzerObjekte[0];
+            //using (dest) // TODO Schnittstelle fehlt
+            //{
+            dest.Open();
+
+            var bacthBlock = new BatchBlock<DS>(BatchSize);
+            var DataFlowDestinationBlock = new ActionBlock<DS[]>(outp => dest.WriteBatch(outp));
+
+            
+            if (v_source.BenutzerObjekte[0].GetType() == typeof(RowTransformation<DS>))
+            {
+                t_b_source = (TransformBlock<DS, DS>)v_source.BenutzerObjekte[1];
+            }
+            else if (v_source.BenutzerObjekte[0].GetType() == typeof(RowTransformationMany<DS>))
+            {
+                t_b_source = (TransformManyBlock<DS, DS>)v_source.BenutzerObjekte[1];
+            }
+            else if (v_source.BenutzerObjekte[0].GetType() == typeof(BroadCast<DS>))
+            {
+                t_b_source = (BroadcastBlock<DS>)v_source.BenutzerObjekte[1];
+            }
+
+            t_b_source.LinkTo(bacthBlock);
+            bacthBlock.LinkTo(DataFlowDestinationBlock);
+
+            t_b_source.Completion.ContinueWith(t => { bacthBlock.Complete(); });
+            bacthBlock.Completion.ContinueWith(t => { DataFlowDestinationBlock.Complete(); });
+
+            WatingForCompletitionCollection.Add(DataFlowDestinationBlock);
+
+        }
+
+        /// <summary>
+        /// GeneratePipeline_DataFlowSource_to_DataFlowDestination generates a TPL-DataFlowPipeline between two vertices of a graph.
+        /// v_source.BenutzerObjekte[0] has to be Type of IDataFlowSource
+        /// v_dest.BenutzerObjekte[0] has to be Type of IDataFlowDestination
+        /// /// </summary>
+        /// <param name="v_source"></param>
+        /// <param name="v_dest"></param>
+        /// <param name="ToCompleteCollection"></param>
+        /// <param name="WatingForCompletitionCollection"></param>
+        private void GeneratePipeline_DataFlowSource_to_DataFlowDestination(Vertex v_source, Vertex v_dest, List<object> ToCompleteCollection, List<object> WatingForCompletitionCollection, Dictionary<IDataFlowSource<DS>, object> DataFlowReaderCollection)
+        {
+            IDataFlowSource<DS> t_b_source = (IDataFlowSource<DS>)v_source.BenutzerObjekte[0];
+            IDataFlowDestination<DS> dest = (IDataFlowDestination<DS>)v_dest.BenutzerObjekte[0];
+
+            RowTransformation<DS> tr = null;
+            TransformBlock<DS, DS> t_b_dest = new TransformBlock<DS, DS>(tr.RowTransformFunction
+                , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
+
+            ToCompleteCollection.Add(t_b_dest);
+            v_dest.BenutzerObjekte.Add(t_b_dest);
+            DataFlowReaderCollection.Add(t_b_source, t_b_dest);
+
+            dest.Open();
+
+            var bacthBlock = new BatchBlock<DS>(BatchSize);
+            var DataFlowDestinationBlock = new ActionBlock<DS[]>(outp => dest.WriteBatch(outp));
+
+            t_b_dest.LinkTo(bacthBlock);
+            bacthBlock.LinkTo(DataFlowDestinationBlock);
+
+            t_b_dest.Completion.ContinueWith(t => { bacthBlock.Complete(); });
+            bacthBlock.Completion.ContinueWith(t => { DataFlowDestinationBlock.Complete(); });
+
+            WatingForCompletitionCollection.Add(DataFlowDestinationBlock);
+
+        }
+
+
+        private void DataFlowBlockComplete(List<object> ToCompleteCollection)
         {
             foreach (object o in ToCompleteCollection)
             {
@@ -355,7 +386,7 @@ namespace ETLObjects
             }
         }
 
-        private void DoDataFlowReaderCollection(Dictionary<IDataFlowSource<DS>, object> DataFlowReaderCollection)
+        private void DataFlowReadersExecute(Dictionary<IDataFlowSource<DS>, object> DataFlowReaderCollection)
         {
             foreach(KeyValuePair<IDataFlowSource<DS>, object> kvp in DataFlowReaderCollection)
             {
@@ -364,79 +395,22 @@ namespace ETLObjects
                 {
                     using (source) { source.Open(); source.Read((TransformBlock<DS, DS>)kvp.Value); }
                 }
+                else if (kvp.Value.GetType() == typeof(TransformManyBlock<DS, DS>))
+                {
+                    using (source) { source.Open(); source.Read((TransformManyBlock<DS, DS>)kvp.Value); }
+                }
+                else if (kvp.Value.GetType() == typeof(BroadcastBlock<DS>))
+                {
+                    using (source) { source.Open(); source.Read((BroadcastBlock<DS>)kvp.Value); }
+                }
                 else throw new Exception(string.Format("Type {0} in DoDataFlowReaderCollection is not implemented.", kvp.Value.GetType()));
 
+
+                
             }
         }
 
-        public override void Execute()
-        {
-            if (g != null) { Execute_Graph(); return; }
-
-            // test code
-            if (DataFlowSource == null) throw new InvalidOperationException("DataFlowSource is null.");
-            else if (DataFlowDestination == null) throw new InvalidOperationException("DataFlowDestination is null.");
-
-
-            using (DataFlowSource)
-            {
-                DataFlowSource.Open();
-                DataFlowDestination.Open();
-
-                var RowTransformBlock = new TransformBlock<DS, DS>(RowTransformFunction
-                    , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
-
-
-                var bacthBlock = new BatchBlock<DS>(BatchSize);
-                var bacthBlock2 = new BatchBlock<DS>(BatchSize);
-                var DataFlowDestinationBlock = new ActionBlock<DS[]>(outp => DataFlowDestination.WriteBatch(outp));
-
-
-                DBDestination<string[]> destination2 = new DBDestination<string[]>();
-                destination2.TableName_Target = "test.Staging2";
-                destination2.FieldCount = 4;
-                destination2.Connection = ControlFlow.CurrentDbConnection;
-                IDataFlowDestination<DS> dest2 = (IDataFlowDestination<DS>)destination2;
-                dest2.ObjectMappingMethod = DataFlowDestination.ObjectMappingMethod;
-                dest2.Open();
-                var DataFlowDestinationBlock2 = new ActionBlock<DS[]>(outp => dest2.WriteBatch(outp));
-
-
-                //RowTransformBlock.LinkTo(bacthBlock);
-
-
-                var broadcastBlock = new BroadcastBlock<DS>(RowTransformFunction,
-                    new ExecutionDataflowBlockOptions {
-                        MaxDegreeOfParallelism = this.MaxDegreeOfParallelism
-
-                    });
-
-                RowTransformBlock.LinkTo(broadcastBlock);
-                broadcastBlock.LinkTo(bacthBlock2);
-                broadcastBlock.LinkTo(bacthBlock);
-                
-
-                bacthBlock.LinkTo(DataFlowDestinationBlock);
-                bacthBlock2.LinkTo(DataFlowDestinationBlock2);
-
-                //RowTransformBlock.Completion.ContinueWith(t => { bacthBlock.Complete(); });
-                RowTransformBlock.Completion.ContinueWith(t => { broadcastBlock.Complete(); });
-                broadcastBlock.Completion.ContinueWith(t => { bacthBlock.Complete(); });
-                broadcastBlock.Completion.ContinueWith(t => { bacthBlock2.Complete(); });
-
-                bacthBlock.Completion.ContinueWith(t => { DataFlowDestinationBlock.Complete(); });
-                bacthBlock2.Completion.ContinueWith(t => { DataFlowDestinationBlock2.Complete(); });
-
-                DataFlowSource.Read(RowTransformBlock);
-
-                RowTransformBlock.Complete();
-                
-                DataFlowDestinationBlock.Completion.Wait();
-                DataFlowDestinationBlock2.Completion.Wait();
-
-            }
-        }
-
+        
 
         public static void Execute(string name, IDataFlowSource<DS> DataFlowSource, IDataFlowDestination<DS> DataFlowDestination, int batchSize
             , Func<DS, DS> rowTransformFunction) => 

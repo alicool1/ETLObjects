@@ -100,11 +100,11 @@ namespace ETLObjectsTest.DataFlow
             g.AddEdge(1, 2); // connect 1 to 2
             g.AddEdge(2, 3); // connect 2 to 3
 
-            //TestHelper.VisualizeGraph(g);
-
-            //DataFlowTask<Datensatz>.Execute("Test dataflow task", DBSource, Ziel_Schreibe, 10000,1, RowTransformationDB);
-
+            
+            
             DataFlowTask<Datensatz>.Execute("Test dataflow task", 10000, 1, g);
+
+            //TestHelper.VisualizeGraph(g);
 
             Assert.AreEqual(4, SqlTask.ExecuteScalar<int>("Check staging table", string.Format("select count(*) from {0}", destTable)));
         }

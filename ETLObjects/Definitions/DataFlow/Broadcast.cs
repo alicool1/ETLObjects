@@ -8,10 +8,7 @@ namespace ETLObjects
 {
     public class BroadCast<DS> : IDataFlowTransformation<DS>
     {
-        public BroadCast()
-        {
-
-        }
+       
         public BroadCast(Func<DS, DS> cloneTransformFunction)
         {
             this.TransformFunction = cloneTransformFunction;
