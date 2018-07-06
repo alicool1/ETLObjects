@@ -57,6 +57,31 @@ namespace ETLObjects {
         {
             return TableName_Target;
         }
+
+        
+        #region IDisposable Support
+        private bool disposedValue = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    Connection?.Close();
+                    Connection = null;
+                }
+                disposedValue = true;
+            }
+        }
+
+        public void Close() => Dispose();
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+        #endregion
     }
 
 }

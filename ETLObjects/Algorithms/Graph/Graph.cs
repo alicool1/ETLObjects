@@ -67,9 +67,9 @@ namespace ETLObjects
                 v = new Vertex(o); // lege neuen Knoten an
                 if (BenutzerObjekt != null)
                 {
-                    v.BenutzerObjekt = BenutzerObjekt;
-                    if (v.BenutzerObjekte == null) v.BenutzerObjekte = new List<object>();
-                    v.BenutzerObjekte.Add(v.BenutzerObjekt);
+                    v.UserDefinedObject = BenutzerObjekt;
+                    if (v.UserDefinedObjects == null) v.UserDefinedObjects = new List<object>();
+                    v.UserDefinedObjects.Add(v.UserDefinedObject);
                 }
                 graph[o] = v; ; // fuege Namen und Knoten in HashMap ein
             }

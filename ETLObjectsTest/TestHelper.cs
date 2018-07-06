@@ -23,8 +23,8 @@ namespace ETLObjectsTest
                 foreach (Edge e in v.edges)
                 {
                     Microsoft.Msagl.Drawing.Edge msagle_edge = graph.AddEdge(
-                        string.Format("{0} - {1} ", v.key, v.BenutzerObjekte[0])
-                        , string.Format("{0} - {1} ", e.dest.key, e.dest.BenutzerObjekte[0])
+                        string.Format("{0} - {1} ", v.key, v.UserDefinedObjects[0])
+                        , string.Format("{0} - {1} ", e.dest.key, e.dest.UserDefinedObjects[0])
                         
                         );
                     if (e.cost > 0) msagle_edge.LabelText = e.cost.ToString();

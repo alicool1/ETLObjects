@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ETLObjects
 {
-    public interface IDataFlowDestination<DS>
+    public interface IDataFlowDestination<DS> : IDisposable
     {
         void WriteBatch(DS[] resultList);
 

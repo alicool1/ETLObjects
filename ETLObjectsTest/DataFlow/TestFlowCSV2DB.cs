@@ -141,7 +141,7 @@ namespace ETLObjectsTest.DataFlow
 
             e7.cost = counter_RowTransformationMany;
 
-            TestHelper.VisualizeGraph(g);
+            //TestHelper.VisualizeGraph(g);
 
             Assert.AreEqual(4, SqlTask.ExecuteScalar<int>("Check staging table1", string.Format("select count(*) from {0}", destTable1)));
             Assert.AreEqual(8, SqlTask.ExecuteScalar<int>("Check staging table2", string.Format("select count(*) from {0}", destTable2)));                        

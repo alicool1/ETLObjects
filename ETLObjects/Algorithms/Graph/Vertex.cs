@@ -24,12 +24,12 @@ namespace ETLObjects
         /// <summary>
         /// beliebige benutzerdefinierte Objekte
         /// </summary>
-        public List<object> BenutzerObjekte;
+        public List<object> UserDefinedObjects;
 
         /// <summary>
         /// beliebiges benutzerdefiniertes Objekt
         /// </summary>
-        public object BenutzerObjekt;
+        public object UserDefinedObject;
 
         /// <summary>
         /// Konstruktor fuer Knoten
