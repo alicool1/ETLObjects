@@ -7,7 +7,7 @@
   </RunConfiguration>
 
   <TestRunParameters>
-    <Parameter name="connectionString" value="Data Source=.;Integrated Security=SSPI;Initial Catalog=ETLToolbox;" />
-    <Parameter name="dbName" value="ETLToolbox" />    
+    <Parameter name="ServerName" value="." />    
+    <Parameter name="InitialCatalog" value="ETLToolbox" />    
   </TestRunParameters>
 </RunSettings>

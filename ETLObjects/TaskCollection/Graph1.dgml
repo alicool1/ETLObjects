@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph GraphDirection="TopToBottom" Layout="Sugiyama" ZoomLevel="-1" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="29dab27f-d2fe-4015-8a32-678c7af231c91" Bounds="361.406764214364,-73.9346856655748,113.693333333333,43.9962" Group="Expanded" Label="Neuer Knoten" UseManualLocation="True" />
+    <Node Id="64dce22b-19d4-4249-acbd-aa33a13b59c41" Category="ff" Bounds="363.40324721077,-168.74505075978,113.693338289493,25.0184046333014" Group="Collapsed" Label="Neuer Knoten" UseManualLocation="True">
+      <Category Ref="hnm" />
+    </Node>
+    <Node Id="6a3d8893-8d34-46d8-ac92-8c16986e15a91" Category="Category2" Bounds="343.40324721077,-208.74515075978,153.693338289493,85.0184048269014" Group="Expanded" Label="hg" UseManualLocation="True">
+      <Category Ref="hnm" />
+    </Node>
+  </Nodes>
+  <Links>
+    <Link Source="6a3d8893-8d34-46d8-ac92-8c16986e15a91" Target="29dab27f-d2fe-4015-8a32-678c7af231c91" Bounds="418.794855736532,-123.726745932879,0.712545497640917,40.793432911069" />
+    <Link Source="6a3d8893-8d34-46d8-ac92-8c16986e15a91" Target="64dce22b-19d4-4249-acbd-aa33a13b59c41" Category="Contains" />
+  </Links>
+  <Categories>
+    <Category Id="Category2" Label="jk" Background="#FF339933" IsTag="True" />
+    <Category Id="Contains" Label="Enthält" Description="Gibt an, ob die Quelle der Verknüpfung das Zielobjekt enthält" CanBeDataDriven="False" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Enthalten in" IsContainment="True" OutgoingActionLabel="Enthält" />
+    <Category Id="ff" Label="ff" IsTag="True" />
+    <Category Id="hnm" Label="hnm" IsTag="True" />
+  </Categories>
+  <Properties>
+    <Property Id="Background" Label="Hintergrund" Description="Die Hintergrundfarbe." DataType="System.Windows.Media.Brush" />
+    <Property Id="Bounds" DataType="System.Windows.Rect" />
+    <Property Id="CanBeDataDriven" Label="CanBeDataDriven" Description="CanBeDataDriven" DataType="System.Boolean" />
+    <Property Id="CanLinkedNodesBeDataDriven" Label="CanLinkedNodesBeDataDriven" Description="CanLinkedNodesBeDataDriven" DataType="System.Boolean" />
+    <Property Id="Expression" DataType="System.String" />
+    <Property Id="GraphDirection" DataType="Microsoft.VisualStudio.Diagrams.Layout.LayoutOrientation" />
+    <Property Id="Group" Label="Gruppe" Description="Knoten als Gruppe anzeigen" DataType="Microsoft.VisualStudio.GraphModel.GraphGroupStyle" />
+    <Property Id="GroupLabel" DataType="System.String" />
+    <Property Id="IncomingActionLabel" Label="IncomingActionLabel" Description="IncomingActionLabel" DataType="System.String" />
+    <Property Id="IsContainment" DataType="System.Boolean" />
+    <Property Id="IsEnabled" DataType="System.Boolean" />
+    <Property Id="IsTag" DataType="System.Boolean" />
+    <Property Id="Label" Label="Bezeichnung" Description="Anzeigbare Bezeichnung eines Objekts, das Anmerkungen einblenden werden kann" DataType="System.String" />
+    <Property Id="Layout" DataType="System.String" />
+    <Property Id="OutgoingActionLabel" Label="OutgoingActionLabel" Description="OutgoingActionLabel" DataType="System.String" />
+    <Property Id="TargetType" DataType="System.Type" />
+    <Property Id="UseManualLocation" DataType="System.Boolean" />
+    <Property Id="Value" DataType="System.String" />
+    <Property Id="ValueLabel" DataType="System.String" />
+    <Property Id="ZoomLevel" DataType="System.String" />
+  </Properties>
+  <Styles>
+    <Style TargetType="Node" GroupLabel="Kategorie 2" ValueLabel="Weist Kategorie auf">
+      <Condition Expression="HasCategory('Category2')" />
+      <Setter Property="Background" Value="#FF339933" />
+    </Style>
+  </Styles>
+</DirectedGraph>

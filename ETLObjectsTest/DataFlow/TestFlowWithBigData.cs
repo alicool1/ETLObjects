@@ -12,18 +12,20 @@ namespace ETLObjectsTest.DataFlow
     public class TestFlowWithBigData
     {
         public TestContext TestContext { get; set; }
-        public string ConnectionStringParameter => TestContext?.Properties["connectionString"].ToString();
-        public string DBNameParameter => TestContext?.Properties["dbName"].ToString();
+
+        static SqlConnectionManager TestDb = null;
 
         [ClassInitialize]
         public static void TestInit(TestContext testContext)
         {
-            TestHelper.RecreateDatabase(testContext);
-            ControlFlow.CurrentDbConnection = new SqlConnectionManager(new ConnectionString(testContext.Properties["connectionString"].ToString()));
-            CreateSchemaTask.Create("test");
+
+            string ServerName = testContext.Properties["ServerName"].ToString();
+            string InitialCatalog = testContext.Properties["InitialCatalog"].ToString();
+            TestDb = new SqlConnectionManager(ServerName, InitialCatalog);
+            new CreateSchemaTask(TestDb.SqlConnection).Create("test");
         }
 
-        
+
 
         public class Datensatz
         {
@@ -123,34 +125,41 @@ namespace ETLObjectsTest.DataFlow
         [TestMethod]
         public void TestDataflow_Massendaten()
         {
-
-            int SkalaGrenze = 10000;
-
-            for (int i = SkalaGrenze * -1; i < SkalaGrenze; i = i + 50)
+            using (TestDb)
             {
-                MetrischeSkala.Add(new IntervalPointMetric(i, i));
-            }
+                int SkalaGrenze = 10000;
+
+                for (int i = SkalaGrenze * -1; i < SkalaGrenze; i = i + 50)
+                {
+                    MetrischeSkala.Add(new IntervalPointMetric(i, i));
+                }
 
 
-            int Anzahl_je_Faktor = 10000;
-            int Anzahl_Faktoren = 10;
+                int Anzahl_je_Faktor = 10000;
+                int Anzahl_Faktoren = 10;
 
-            string QuellTabelle = "test.source";
-            CreateTableTask.Create(QuellTabelle, new List<TableColumn>() {
-                new TableColumn("Key", "int", allowNulls: false, isPrimaryKey: true) { IsIdentity = true },
-                new TableColumn("F1", "int", allowNulls: true),
-                new TableColumn("F2", "int", allowNulls: true),
-                new TableColumn("F3", "int", allowNulls: true),
-                new TableColumn("F4", "int", allowNulls: true),
-                new TableColumn("F5", "int", allowNulls: true),
-                new TableColumn("F6", "int", allowNulls: true),
-                new TableColumn("F7", "int", allowNulls: true),
-                new TableColumn("F8", "int", allowNulls: true),
-                new TableColumn("F9", "int", allowNulls: true),
-                new TableColumn("F10", "int", allowNulls: true),});
+                string TempObjectNameName = "test.tmp";
+                new DropTableTask(TestDb.SqlConnection).Execute(TempObjectNameName);
 
-            string sql_generate_Massendaten = @"
-select top 0 F1,F2,F3,F4,F5,F6,F7,F8,F9,F10 into test.tmp from " + QuellTabelle + @" -- tmp-Tabelle erstellen
+                string QuellSchemaName = "test";
+                string QuellTabelle = "source";
+                string QuellObjekt = $"[{QuellSchemaName}].[{QuellTabelle}]";
+
+                new DropAndCreateTableTask(TestDb.SqlConnection).Execute(QuellSchemaName, QuellTabelle, new List<TableColumn>() {
+                new TableColumn("Key", SqlDbType.Int, false, true, true),
+                new TableColumn("F1", SqlDbType.Int, true),
+                new TableColumn("F2", SqlDbType.Int, true),
+                new TableColumn("F3", SqlDbType.Int, true),
+                new TableColumn("F4", SqlDbType.Int, true),
+                new TableColumn("F5", SqlDbType.Int, true),
+                new TableColumn("F6", SqlDbType.Int, true),
+                new TableColumn("F7", SqlDbType.Int, true),
+                new TableColumn("F8", SqlDbType.Int, true),
+                new TableColumn("F9", SqlDbType.Int, true),
+                new TableColumn("F10",SqlDbType.Int, true),});
+
+                string sql_generate_Massendaten = @"
+select top 0 F1,F2,F3,F4,F5,F6,F7,F8,F9,F10 into " + TempObjectNameName + @" from " + QuellObjekt + @" -- tmp-Tabelle erstellen
 declare @grenze as int = " + SkalaGrenze + @"
 declare @i as int = 0
 while (@i < " + Anzahl_je_Faktor + @")
@@ -163,90 +172,93 @@ end
 declare @j as int = 0
 while (@j < " + Anzahl_Faktoren + @")
 begin
-	insert into " + QuellTabelle + @"
+	insert into " + QuellObjekt + @"
 	select F1,F2,F3,F4,F5,F6,F7,F8,F9,F10 from test.tmp
 	set @j = @j + 1
 end
 "
-;
-            Debug.WriteLine("Generiere Massendaten ... ");
+    ;
+                Debug.WriteLine("Generiere Massendaten ... ");
 
-            SqlTask.ExecuteNonQuery("Generiere Massendaten", sql_generate_Massendaten);
+                new ExecuteSQLTask(TestDb.SqlConnection).ExecuteNonQuery(sql_generate_Massendaten);
 
+                string ZielSchemaName = "test";
+                string ZielTabelle = "destination";
+                string ZielObjekt = $"[{ZielSchemaName}].[{ZielTabelle}]";
+                new DropAndCreateTableTask(TestDb.SqlConnection).Execute(ZielSchemaName, ZielTabelle, new List<TableColumn>() {
 
-            string ZielTabelle = "test.destination";
-            CreateTableTask.Create(ZielTabelle, new List<TableColumn>() {
-                new TableColumn("Key", "int", allowNulls: false, isPrimaryKey: true) { IsIdentity = false },
-                new TableColumn("F1", "int", allowNulls: true), new TableColumn("F1_calc", "int", allowNulls: true),
-                new TableColumn("F2", "int", allowNulls: true), new TableColumn("F2_calc", "int", allowNulls: true),
-                new TableColumn("F3", "int", allowNulls: true), new TableColumn("F3_calc", "int", allowNulls: true),
-                new TableColumn("F4", "int", allowNulls: true), new TableColumn("F4_calc", "int", allowNulls: true),
-                new TableColumn("F5", "int", allowNulls: true), new TableColumn("F5_calc", "int", allowNulls: true),
-                new TableColumn("F6", "int", allowNulls: true), new TableColumn("F6_calc", "int", allowNulls: true),
-                new TableColumn("F7", "int", allowNulls: true), new TableColumn("F7_calc", "int", allowNulls: true),
-                new TableColumn("F8", "int", allowNulls: true), new TableColumn("F8_calc", "int", allowNulls: true),
-                new TableColumn("F9", "int", allowNulls: true), new TableColumn("F9_calc", "int", allowNulls: true),
-                new TableColumn("F10", "int", allowNulls: true), new TableColumn("F10_calc", "int", allowNulls: true),});
-
-
-            System.Data.SqlClient.SqlConnectionStringBuilder builder_CurrentDbConnection
-                = new System.Data.SqlClient.SqlConnectionStringBuilder(ControlFlow.CurrentDbConnection.ConnectionString.ToString());
-            string Current_InitialCatalog = builder_CurrentDbConnection.InitialCatalog;
-            string Current_DataSource = builder_CurrentDbConnection.DataSource;
-
-            DBSource<Datensatz> DBSource = new DBSource<Datensatz>(
-                Current_DataSource, Current_InitialCatalog
-                , string.Format("select [Key],F1,F2,F3,F4,F5,F6,F7,F8,F9,F10 from {0}", QuellTabelle)
-                );
-            DBSource.DataMappingMethod = ReaderAdapter.Read;
+               new TableColumn("Key", SqlDbType.Int, false, true, true),
+                new TableColumn("F1", SqlDbType.Int, true), new TableColumn("F1_calc", SqlDbType.Int, true),
+                new TableColumn("F2", SqlDbType.Int, true), new TableColumn("F2_calc", SqlDbType.Int, true),
+                new TableColumn("F3", SqlDbType.Int, true), new TableColumn("F3_calc", SqlDbType.Int, true),
+                new TableColumn("F4", SqlDbType.Int, true), new TableColumn("F4_calc", SqlDbType.Int, true),
+                new TableColumn("F5", SqlDbType.Int, true), new TableColumn("F5_calc", SqlDbType.Int, true),
+                new TableColumn("F6", SqlDbType.Int, true), new TableColumn("F6_calc", SqlDbType.Int, true),
+                new TableColumn("F7", SqlDbType.Int, true), new TableColumn("F7_calc", SqlDbType.Int, true),
+                new TableColumn("F8", SqlDbType.Int, true), new TableColumn("F8_calc", SqlDbType.Int, true),
+                new TableColumn("F9", SqlDbType.Int, true), new TableColumn("F9_calc", SqlDbType.Int, true),
+                new TableColumn("F10",SqlDbType.Int, true), new TableColumn("F10_calc", SqlDbType.Int, true),
+});
 
 
-            DBDestination<Datensatz> Ziel_Schreibe = new DBDestination<Datensatz>();
-            Ziel_Schreibe.TableName_Target = ZielTabelle;
-            Ziel_Schreibe.FieldCount = FieldCount;
-            Ziel_Schreibe.ObjectMappingMethod = WriterAdapter.Fill;
-            Ziel_Schreibe.Connection = ControlFlow.CurrentDbConnection;
+                System.Data.SqlClient.SqlConnectionStringBuilder builder_CurrentDbConnection
+                    = new System.Data.SqlClient.SqlConnectionStringBuilder(TestDb.SqlConnection.ConnectionString);
+                string Current_InitialCatalog = builder_CurrentDbConnection.InitialCatalog;
+                string Current_DataSource = builder_CurrentDbConnection.DataSource;
+
+                DBSource<Datensatz> DBSource = new DBSource<Datensatz>(TestDb.getNewSqlConnection()
+                    , string.Format("select [Key],F1,F2,F3,F4,F5,F6,F7,F8,F9,F10 from {0}", QuellObjekt)
+                    );
+                DBSource.DataMappingMethod = ReaderAdapter.Read;
 
 
-            Graph g = new Graph();
-
-            g.GetVertex(0, DBSource);
-            g.GetVertex(1, new RowTransformation<Datensatz>(RowTransformationDB));
-            g.GetVertex(2, Ziel_Schreibe);
-
-            g.AddEdge(0, 1); // connect 0 to 1
-            g.AddEdge(1, 2); // connect 1 to 2
+                DBDestination<Datensatz> Ziel_Schreibe = new DBDestination<Datensatz>();
+                Ziel_Schreibe.ObjectName = ZielObjekt;
+                Ziel_Schreibe.FieldCount = FieldCount;
+                Ziel_Schreibe.ObjectMappingMethod = WriterAdapter.Fill;
+                Ziel_Schreibe.SqlConnection = TestDb.SqlConnection;
 
 
-            //TestHelper.VisualizeGraph(g);
+                Graph g = new Graph();
+
+                g.GetVertex(0, DBSource);
+                g.GetVertex(1, new RowTransformation<Datensatz>(RowTransformationDB));
+                g.GetVertex(2, Ziel_Schreibe);
+
+                g.AddEdge(0, 1); // connect 0 to 1
+                g.AddEdge(1, 2); // connect 1 to 2
 
 
-            int MaxDegreeOfParallelism = 1;
-            SqlTask.ExecuteNonQuery("truncate Zieltabelle", string.Format("truncate table {0}", ZielTabelle));
-            Debug.WriteLine("Start Laufzeittest MaxDegreeOfParallelism {0} ... ", MaxDegreeOfParallelism);
-            Stopwatch s = Stopwatch.StartNew();
-            DataFlowTask<Datensatz>.Execute("Test dataflow task", 10000, MaxDegreeOfParallelism, g);
-            Debug.WriteLine("Laufzeit in ms: {0}", s.ElapsedMilliseconds);
-
-            MaxDegreeOfParallelism = 5;
-            SqlTask.ExecuteNonQuery("truncate Zieltabelle", string.Format("truncate table {0}", ZielTabelle));
-            Debug.WriteLine("Start Laufzeittest MaxDegreeOfParallelism {0} ... ", MaxDegreeOfParallelism);
-            s = Stopwatch.StartNew();
-            DataFlowTask<Datensatz>.Execute("Test dataflow task", 10000, MaxDegreeOfParallelism, g);
-            Debug.WriteLine("Laufzeit in ms: {0}", s.ElapsedMilliseconds);
+                //TestHelper.VisualizeGraph(g);
 
 
-            MaxDegreeOfParallelism = 10;
-            SqlTask.ExecuteNonQuery("truncate Zieltabelle", string.Format("truncate table {0}", ZielTabelle));
-            Debug.WriteLine("Start Laufzeittest MaxDegreeOfParallelism {0} ... ", MaxDegreeOfParallelism);
-            s = Stopwatch.StartNew();
-            DataFlowTask<Datensatz>.Execute("Test dataflow task", 10000, MaxDegreeOfParallelism, g);
-            Debug.WriteLine("Laufzeit in ms: {0}", s.ElapsedMilliseconds);
+                int MaxDegreeOfParallelism = 1;
+                new ExecuteSQLTask(TestDb.SqlConnection).ExecuteNonQuery(string.Format("truncate table {0}", ZielObjekt));
+                Debug.WriteLine("Start Laufzeittest MaxDegreeOfParallelism {0} ... ", MaxDegreeOfParallelism);
+                Stopwatch s = Stopwatch.StartNew();
+                DataFlowTask<Datensatz>.Execute("Test dataflow task", 10000, MaxDegreeOfParallelism, g);
+                Debug.WriteLine("Laufzeit in ms: {0}", s.ElapsedMilliseconds);
 
-            
+                MaxDegreeOfParallelism = 5;
+                new ExecuteSQLTask(TestDb.SqlConnection).ExecuteNonQuery(string.Format("truncate table {0}", ZielObjekt));
+                Debug.WriteLine("Start Laufzeittest MaxDegreeOfParallelism {0} ... ", MaxDegreeOfParallelism);
+                s = Stopwatch.StartNew();
+                DataFlowTask<Datensatz>.Execute("Test dataflow task", 10000, MaxDegreeOfParallelism, g);
+                Debug.WriteLine("Laufzeit in ms: {0}", s.ElapsedMilliseconds);
 
-            Assert.AreEqual(Anzahl_je_Faktor * Anzahl_Faktoren, SqlTask.ExecuteScalar<int>("Check staging table", string.Format("select count(*) from {0}", QuellTabelle)));
 
+                MaxDegreeOfParallelism = 10;
+                new ExecuteSQLTask(TestDb.SqlConnection).ExecuteNonQuery(string.Format("truncate table {0}", ZielObjekt));
+                Debug.WriteLine("Start Laufzeittest MaxDegreeOfParallelism {0} ... ", MaxDegreeOfParallelism);
+                s = Stopwatch.StartNew();
+                DataFlowTask<Datensatz>.Execute("Test dataflow task", 10000, MaxDegreeOfParallelism, g);
+                Debug.WriteLine("Laufzeit in ms: {0}", s.ElapsedMilliseconds);
+
+
+
+                Assert.AreEqual(Anzahl_je_Faktor * Anzahl_Faktoren, new ExecuteSQLTask(TestDb.SqlConnection).ExecuteScalar(string.Format("select count(*) from {0}", QuellObjekt)));
+
+            }
         }
 
 

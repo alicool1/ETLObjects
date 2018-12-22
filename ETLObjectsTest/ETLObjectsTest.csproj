@@ -47,9 +47,6 @@
       <HintPath>..\packages\Microsoft.Msagl.GraphViewerGDI.1.0.2\lib\net40\Microsoft.Msagl.GraphViewerGdi.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Windows.Forms" />
@@ -69,41 +66,15 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="Database\TestGetDatabaseListTask.cs" />
-    <Compile Include="Database\TestCleanUpSchemaTask.cs" />
-    <Compile Include="ControlFlow\TestSequence.cs" />
-    <Compile Include="Cube\TestDropCubeTask.cs" />
-    <Compile Include="Cube\TestProcessCubeTask.cs" />
-    <Compile Include="Cube\TestXMLATask.cs" />
-    <Compile Include="ControlFlow\TestCustomTask.cs" />
-    <Compile Include="Database\TestCreateIndexTask.cs" />
-    <Compile Include="Database\TestCalculateDatabaseHashTask.cs" />
-    <Compile Include="Database\TestParallelProcessing.cs" />
     <Compile Include="DataFlow\TestFlowWithBigData.cs" />
     <Compile Include="DataFlow\TestFlowDB2DB.cs" />
-    <Compile Include="Logging\TestGetLoadProcessAsJSONTask.cs" />
-    <Compile Include="Logging\TestETLLogWithDemo.cs" />
-    <Compile Include="Logging\TestLoadProcessLog.cs" />
-    <Compile Include="Logging\TestLogging.cs" />
     <Compile Include="DataFlow\TestFlowCSV2DB.cs" />
-    <Compile Include="Database\TestCreateTableTask.cs" />
-    <Compile Include="Database\TestCreateSchemaTask.cs" />
-    <Compile Include="Database\TestCRUDViewTask.cs" />
     <Compile Include="TestHelper.cs" />
-    <Compile Include="Database\TestCRUDProcedureTask.cs" />
-    <Compile Include="Database\TestTruncateTable.cs" />
-    <Compile Include="Database\TestRowCountTask.cs" />
-    <Compile Include="Database\TestSqlTask.cs" />
-    <Compile Include="Database\TestCreateDeleteDatabaseTasks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Database\TestAddFileGroupTask.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="DataFlow\InputData.csv">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Logging\demolog_tobe.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
