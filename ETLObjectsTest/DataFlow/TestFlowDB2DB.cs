@@ -109,7 +109,7 @@ namespace ETLObjectsTest.DataFlow
 
                 DataFlowTask<Datensatz>.Execute("Test dataflow task", 10000, 1, g);
 
-                //TestHelper.VisualizeGraph(g);
+                TestHelper.VisualizeGraph(g);
 
                 Assert.AreEqual(4, new ExecuteSQLTask(TestDb.SqlConnection).ExecuteScalar(string.Format("select count(*) from {0}", destObject)));
             }

@@ -229,7 +229,7 @@ end
                 g.AddEdge(1, 2); // connect 1 to 2
 
 
-                //TestHelper.VisualizeGraph(g);
+                TestHelper.VisualizeGraph(g);
 
 
                 int MaxDegreeOfParallelism = 1;
