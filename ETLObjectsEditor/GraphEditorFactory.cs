@@ -11,6 +11,8 @@ using Microsoft.VisualStudio.OLE.Interop;
 
 namespace ETLObjectsEditor
 {
+
+    [Guid(Constants.GuidEditorFactory)]
     public class GraphEditorFactory : IVsEditorFactory, IDisposable
     {
         private ServiceProvider vsServiceProvider;
