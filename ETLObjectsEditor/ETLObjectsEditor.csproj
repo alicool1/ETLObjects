@@ -78,6 +78,8 @@
     <None Include="Templates\ETLObjectsEditor.vsdir" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\Bitmap1.bmp" />
+    <Content Include="Resources\Bitmap2.bmp" />
     <Content Include="Resources\Package.ico" />
     <Content Include="Resources\ToolboxItem.ico" />
     <Content Include="stylesheet.css" />
