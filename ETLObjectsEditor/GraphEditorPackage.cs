@@ -23,6 +23,7 @@ namespace ETLObjectsEditor
 
     public class GraphEditorPackage : Package, IDisposable
     {
+        private GraphEditorFactory graphEditorFactory;
 
         private static DTE DTE { get; set; }
 
@@ -96,11 +97,44 @@ namespace ETLObjectsEditor
 
             DTE = GetService(typeof(DTE)) as DTE;
 
-        }
+            graphEditorFactory = new GraphEditorFactory();
+            RegisterEditorFactory(graphEditorFactory);
 
+
+        }
+        #region IDisposable Pattern
+        /// <summary>
+        /// Releases the resources used by the Package object.
+        /// </summary>
         public void Dispose()
         {
-            throw new NotImplementedException();
+            Dispose(true);
         }
+
+        /// <summary>
+        /// Releases the resources used by the Package object.
+        /// </summary>
+        /// <param name="disposing">This parameter determines whether the method has been called directly or indirectly by a user's code.</param>
+        protected override void Dispose(bool disposing)
+        {
+            try
+            {
+                Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering Dispose() of: {0}", ToString()));
+                if (disposing)
+                {
+                    if (graphEditorFactory != null)
+                    {
+                        graphEditorFactory.Dispose();
+                        graphEditorFactory = null;
+                    }
+                    GC.SuppressFinalize(this);
+                }
+            }
+            finally
+            {
+                base.Dispose(disposing);
+            }
+        }
+        #endregion
     }
 }
