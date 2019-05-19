@@ -13,6 +13,7 @@ namespace ETLObjectsEditor
     public partial class UserControl_Node : UserControl
     {
         public Guid Guid;
+        public Point PointMouseDown;
 
         public UserControl_Node(string s)
         {
@@ -20,7 +21,7 @@ namespace ETLObjectsEditor
             label1.Text = s;
             Guid = Guid.NewGuid();
             this.MouseDown += UserControl_Node_MouseDown;
-           
+
         }
 
 
@@ -28,13 +29,15 @@ namespace ETLObjectsEditor
         {
             DataObject data = new DataObject();
             data.SetData(DataFormats.StringFormat, "UserControl_Node|" + Guid.ToString());
+            PointMouseDown = new Point(e.X, e.Y);
             this.DoDragDrop(data, DragDropEffects.Copy | DragDropEffects.Move);
+           
         }
 
        
         private void button1_Click(object sender, EventArgs e)
         {
-            MessageBox.Show(label1.Text);
+            MessageBox.Show(Guid.ToString());
         }
     }
 }

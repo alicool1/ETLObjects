@@ -12,16 +12,62 @@ namespace ETLObjectsEditor
     {
         public GraphEditorControl()
         {
+            this.DragOver += GraphEditorControl_DragOver;
             this.DragDrop += new DragEventHandler(OnDragDrop);
             this.DragEnter += new DragEventHandler(OnDragEnter);
-            this.Paint += GraphEditorControl_Paint;
+
             this.AllowDrop = true;
         }
 
-        private void GraphEditorControl_Paint(object sender, PaintEventArgs e)
+      
+
+        private void GraphEditorControl_DragOver(object sender, DragEventArgs e)
         {
-           
+            // Check if the picked item is the one we added to the toolbox.
+            if (e.Data.GetDataPresent(typeof(ToolboxItemData)))
+            {
+
+            }
+
+            else if (e.Data.GetDataPresent(typeof(ToolboxItemData2)))
+            {
+               
+            }
+
+
+            else if (e.Data.GetData(DataFormats.StringFormat).ToString().StartsWith("UserControl_Node"))
+            {
+
+                string s = e.Data.GetData(DataFormats.StringFormat).ToString();
+
+                string[] tokens = s.Split('|');
+
+                string GuidString = tokens[1];
+
+                foreach (Control c in this.Controls)
+                {
+                    if (c.GetType() == typeof(UserControl_Node))
+                    {
+                        UserControl_Node uc = (UserControl_Node)c;
+
+                        if (uc.Guid.ToString() == GuidString)
+                        {
+
+                            Point newPlace = new Point(
+                                  Cursor.Position.X - uc.PointMouseDown.X
+                                , Cursor.Position.Y - uc.PointMouseDown.Y);
+                            uc.Location = this.PointToClient(newPlace);
+                        }
+                    }
+                }
+
+
+                // Specify DragDrop result
+                e.Effect = DragDropEffects.Move;
+            }
+
         }
+    
 
 
         /// <summary>
@@ -107,7 +153,11 @@ namespace ETLObjectsEditor
                   
                         if (uc.Guid.ToString() == GuidString)
                         {
-                            uc.Location = this.PointToClient(Cursor.Position);
+
+                            Point newPlace = new Point(
+                                  Cursor.Position.X - uc.PointMouseDown.X
+                                , Cursor.Position.Y - uc.PointMouseDown.Y);
+                            uc.Location = this.PointToClient(newPlace);
                         }
                     }
                 }
