@@ -11,7 +11,7 @@ namespace ETLObjectsEditor
 {
 
     [PackageRegistration(UseManagedResourcesOnly = true)]
-    [InstalledProductRegistration("#100", "#102", "10.0", IconResourceID = 400)]
+    [InstalledProductRegistration("#100", "#102", "1.0", IconResourceID = 400)]
     // We register our AddNewItem Templates the Miscellaneous Files Project:
     [ProvideEditorExtension(typeof(GraphEditorFactory), Constants.fileExtension, 32,
               ProjectGuid = "{A2FE74E1-B743-11d0-AE1A-00A0C90FFFC3}",
@@ -20,16 +20,15 @@ namespace ETLObjectsEditor
     // We register that our editor supports LOGVIEWID_Designer logical view
     [ProvideEditorLogicalView(typeof(GraphEditorFactory), "{7651a703-06e5-11d1-8ebd-00a0c90f26ea}")]
     [Guid(Constants.GuidClientPackage)]
-
     public class GraphEditorPackage : Package, IDisposable
     {
         private GraphEditorFactory graphEditorFactory;
 
         private static DTE DTE { get; set; }
 
-        public static string GetProjectName(string fileName)
+        public static void PutTextToCS(string text)
         {
-
+            ThreadHelper.ThrowIfNotOnUIThread();
             EnvDTE.Solution solution = DTE.Solution;
             EnvDTE.Projects _projects = solution.Projects;
 
@@ -52,21 +51,24 @@ namespace ETLObjectsEditor
                         Window x = item.Open();
                         x.Visible = true;
                         var document = x.Document;
+                        document.ReadOnly = false;
                         TextDocument editDoc = document.Object("TextDocument") as TextDocument;
 
-
+                        string x1 = editDoc.ToString();
+                        
                         EditPoint objEditPt = editDoc.CreateEditPoint();
-                        objEditPt.StartOfDocument();
-                        document.ReadOnly = false;
-
-                        while (!objEditPt.AtEndOfDocument)
-                        {
-                            //objEditPt.Delete(objEditPt.LineLength);
-                            objEditPt.LineDown(1);
-                        }
-                        objEditPt.Insert("Hallo");
-                        objEditPt.DeleteWhitespace(vsWhitespaceOptions.vsWhitespaceOptionsHorizontal);
-                        objEditPt.DeleteWhitespace(vsWhitespaceOptions.vsWhitespaceOptionsVertical);
+                        editDoc.Selection.Insert(text + Environment.NewLine);
+                        System.Windows.Forms.SendKeys.SendWait("^k");
+                        System.Windows.Forms.SendKeys.SendWait("^d");
+                        //objEditPt.StartOfDocument();                      
+                        //while (!objEditPt.AtEndOfDocument)
+                        //{
+                        //    //objEditPt.Delete(objEditPt.LineLength);
+                        //    objEditPt.LineDown(1);
+                        //}
+                        //objEditPt.Insert(text);
+                        //objEditPt.DeleteWhitespace(vsWhitespaceOptions.vsWhitespaceOptionsHorizontal);
+                        //objEditPt.DeleteWhitespace(vsWhitespaceOptions.vsWhitespaceOptionsVertical);
 
                         Console.WriteLine("saving file {0}", document.FullName);
                         document.Save(document.FullName);
@@ -76,6 +78,14 @@ namespace ETLObjectsEditor
                     }
                 }
             }
+
+        }
+
+        public static string GetProjectName(string fileName)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            EnvDTE.Solution solution = DTE.Solution;
+            EnvDTE.Projects _projects = solution.Projects;
 
 
             string result = null;
@@ -92,6 +102,7 @@ namespace ETLObjectsEditor
 
         protected override void Initialize()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             //Create Editor Factory
             base.Initialize();
 

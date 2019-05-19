@@ -24,6 +24,7 @@ namespace ETLObjectsEditor
 
         private void Dispose(bool disposing)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (disposing)
             {
                 /// Since we create a ServiceProvider which implements IDisposable we

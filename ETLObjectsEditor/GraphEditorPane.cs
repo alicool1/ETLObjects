@@ -12,6 +12,7 @@ using VSConstants = Microsoft.VisualStudio.VSConstants;
 using ErrorHandler = Microsoft.VisualStudio.ErrorHandler;
 using IOleDataObject = Microsoft.VisualStudio.OLE.Interop.IDataObject;
 using ETLObjectsEditor.Properties;
+using IDataObject = Microsoft.VisualStudio.OLE.Interop.IDataObject;
 
 namespace ETLObjectsEditor
 {
@@ -68,15 +69,15 @@ namespace ETLObjectsEditor
 
             // This call is required by the Windows.Forms Form Designer.
             editorControl = new GraphEditorControl();
+       
             editorControl.AllowDrop = true;
             //editorControl.HideSelection = false;
             editorControl.TabIndex = 0;
-            editorControl.Text = string.Empty;
             editorControl.Name = "GraphEditorPane";
 
-            editorControl.DragEnter += new DragEventHandler(OnDragEnter);
-            editorControl.DragDrop += new DragEventHandler(OnDragDrop);
-            editorControl.TextChanged += new EventHandler(OnTextChange);
+
+
+            
         }
 
         /// <summary>
@@ -86,24 +87,43 @@ namespace ETLObjectsEditor
         /// </summary>
         protected override void Initialize()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             // If toolboxData have initialized, skip creating a new one.
             if (toolboxData == null)
             {
-                // Create the data object that will store the data for the menu item.
-                toolboxData = new OleDataObject();
-                toolboxData.SetData(typeof(ToolboxItemData), new ToolboxItemData("Test string"));
 
                 // Get the toolbox service
                 IVsToolbox toolbox = (IVsToolbox)GetService(typeof(SVsToolbox));
 
+
+                System.Drawing.Bitmap bitmap1 = new System.Drawing.Bitmap(@"Resources\Bitmap1.bmp");
+                System.Drawing.Bitmap bitmap2 = new System.Drawing.Bitmap(@"Resources\Bitmap2.bmp");
+
                 // Create the array of TBXITEMINFO structures to describe the items
                 // we are adding to the toolbox.
-                TBXITEMINFO[] itemInfo = new TBXITEMINFO[1];
-                itemInfo[0].bstrText = "Toolbox Sample Item";
-                itemInfo[0].hBmp = IntPtr.Zero;
-                itemInfo[0].dwFlags = (uint)__TBXITEMINFOFLAGS.TBXIF_DONTPERSIST;
+                TBXITEMINFO[] itemInfo1 = new TBXITEMINFO[1];
+                itemInfo1[0].bstrText = "Toolbox Sample Item";
+                itemInfo1[0].hBmp = bitmap1.GetHbitmap();
+                itemInfo1[0].dwFlags = (uint)__TBXITEMINFOFLAGS.TBXIF_DONTPERSIST;
 
-                ErrorHandler.ThrowOnFailure(toolbox.AddItem(toolboxData, itemInfo, "Toolbox Test"));
+                TBXITEMINFO[] itemInfo2 = new TBXITEMINFO[1];
+                itemInfo2[0].bstrText = "Toolbox Sample Item 2";
+                itemInfo2[0].hBmp = bitmap2.GetHbitmap();
+                itemInfo2[0].dwFlags = (uint)__TBXITEMINFOFLAGS.TBXIF_DONTPERSIST;
+
+                toolboxData = new OleDataObject();
+                toolboxData.SetData(typeof(ToolboxItemData), new ToolboxItemData("Test string"));
+                ErrorHandler.ThrowOnFailure(toolbox.AddItem(toolboxData, itemInfo1, "GraphML Toolbox"));
+                
+
+                toolboxData = new OleDataObject();
+                toolboxData.SetData(typeof(ToolboxItemData2), new ToolboxItemData2("Test string 2"));
+
+                ErrorHandler.ThrowOnFailure(toolbox.AddItem(toolboxData, itemInfo2, "GraphML Toolbox"));
+
+                
+
+
             }
         }
 
@@ -119,7 +139,7 @@ namespace ETLObjectsEditor
         {
             get
             {
-                return editorControl;
+                return (IWin32Window)editorControl;
             }
         }
         #endregion Properties
@@ -348,6 +368,7 @@ namespace ETLObjectsEditor
         /// <returns>S_OK if the method succeeds.</returns>
         int IPersistFileFormat.GetClassID(out Guid pClassID)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             ((IPersist)this).GetClassID(out pClassID);
             return VSConstants.S_OK;
         }
@@ -452,6 +473,7 @@ namespace ETLObjectsEditor
         /// <returns>S_OK if the method succeeds.</returns>
         int IPersistFileFormat.Load(string pszFilename, uint grfMode, int fReadOnly)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             if ((pszFilename == null) &&
                  ((fileName == null) || (fileName.Length == 0)))
             {
@@ -565,11 +587,11 @@ namespace ETLObjectsEditor
         {
             GraphEditorPackage.GetProjectName(fileName);
             string s = "";
-            foreach (Control c in editorControl.Controls)
-            {
-                Label l = (Label)c;
-                s += l.Location.X + ";" + l.Location.Y + ";" + l.Text + Environment.NewLine;
-            }
+            //foreach (Control c in editorControl)
+            //{
+            //    Label l = (Label)c;
+            //    s += l.Location.X + ";" + l.Location.Y + ";" + l.Text + Environment.NewLine;
+            //}
             System.IO.File.WriteAllText(fileName, s);
 
         }
@@ -585,7 +607,7 @@ namespace ETLObjectsEditor
                 Label l = new Label();
                 l.Text = tokens[2];
                 l.Location = new System.Drawing.Point(x, y);
-                editorControl.Controls.Add(l);
+                //editorControl.Controls.Add(l);
             }
 
         }
@@ -613,6 +635,7 @@ namespace ETLObjectsEditor
         /// <returns>S_OK if the method succeeds.</returns>
         int IVsPersistDocData.GetGuidEditorType(out Guid pClassID)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             return ((IPersistFileFormat)this).GetClassID(out pClassID);
         }
 
@@ -623,6 +646,7 @@ namespace ETLObjectsEditor
         /// <returns>S_OK if the function succeeds.</returns>
         int IVsPersistDocData.IsDocDataDirty(out int pfDirty)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             return ((IPersistFileFormat)this).IsDirty(out pfDirty);
         }
 
@@ -645,6 +669,7 @@ namespace ETLObjectsEditor
         /// <returns>S_OK if the method succeeds.</returns>
         int IVsPersistDocData.LoadDocData(string pszMkDocument)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             return ((IPersistFileFormat)this).Load(pszMkDocument, 0, 0);
         }
 
@@ -670,6 +695,7 @@ namespace ETLObjectsEditor
         /// <returns>S_OK if the method succeeds.</returns>
         int IVsPersistDocData.ReloadDocData(uint grfFlags)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             return ((IPersistFileFormat)this).Load(null, grfFlags, 0);
         }
 
@@ -709,6 +735,7 @@ namespace ETLObjectsEditor
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:DoNotPassLiteralsAsLocalizedParameters")]
         int IVsPersistDocData.SaveDocData(VSSAVEFLAGS dwSave, out string pbstrMkDocumentNew, out int pfSaveCanceled)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             pbstrMkDocumentNew = null;
             pfSaveCanceled = 0;
             int hr = VSConstants.S_OK;
@@ -806,6 +833,7 @@ namespace ETLObjectsEditor
         /// <returns>S_OK if the method succeeds.</returns>
         int IVsPersistDocData.SetUntitledDocPath(string pszDocDataPath)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             return ((IPersistFileFormat)this).InitNew(fileFormat);
         }
 
@@ -824,6 +852,8 @@ namespace ETLObjectsEditor
 
             // Check if the data object is of type MyToolboxData.
             if (oleData.GetDataPresent(typeof(ToolboxItemData)))
+                return VSConstants.S_OK;
+            if (oleData.GetDataPresent(typeof(ToolboxItemData2)))
                 return VSConstants.S_OK;
 
             // In all the other cases return S_FALSE
@@ -844,7 +874,7 @@ namespace ETLObjectsEditor
             {
                 Debug.WriteLine("MyToolboxItemData selected from the toolbox");
                 ToolboxItemData myData = (ToolboxItemData)oleData.GetData(typeof(ToolboxItemData));
-                editorControl.Text += myData.Content;
+                //editorControl.Text += myData.Content;
             }
             return VSConstants.S_OK;
         }
@@ -883,45 +913,7 @@ namespace ETLObjectsEditor
             }
         }
 
-        /// <summary>
-        /// Handles the DragEnter event of contained RichTextBox object. 
-        /// Process drag effect for the toolbox item.
-        /// </summary>
-        /// <param name="sender">The reference to contained RichTextBox object.</param>
-        /// <param name="e">The event arguments.</param>
-        void OnDragEnter(object sender, DragEventArgs e)
-        {
-            // Check if the source of the drag is the toolbox item
-            // created by this sample.
-            if (e.Data.GetDataPresent(typeof(ToolboxItemData)))
-            {
-                // Only in this case we will enable the drop
-                e.Effect = DragDropEffects.Copy;
-            }
-        }
-
-        /// <summary>
-        /// Handles the DragDrop event of contained RichTextBox object. 
-        /// Process text changes on drop event.
-        /// </summary>
-        /// <param name="sender">The reference to contained RichTextBox object.</param>
-        /// <param name="e">The event arguments.</param>
-        void OnDragDrop(object sender, DragEventArgs e)
-        {
-            // Check if the picked item is the one we added to the toolbox.
-            if (e.Data.GetDataPresent(typeof(ToolboxItemData)))
-            {
-                ToolboxItemData myData = (ToolboxItemData)e.Data.GetData(typeof(ToolboxItemData));
-                editorControl.Text += myData.Content;
-                Label l = new Label();
-                l.Text = DateTime.Now.ToLongTimeString();
-                l.Location = editorControl.PointToClient(Cursor.Position);
-                editorControl.Controls.Add(l);
-
-                // Specify DragDrop result
-                e.Effect = DragDropEffects.Copy;
-            }
-        }
+        
 
         #endregion
 
@@ -933,6 +925,7 @@ namespace ETLObjectsEditor
         /// <returns>True if the editing of the file are enabled, otherwise returns false.</returns>
         private bool CanEditFile()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             // Check the status of the recursion guard
             if (gettingCheckoutStatus)
             {
@@ -983,6 +976,7 @@ namespace ETLObjectsEditor
         /// </summary>
         private void NotifyDocChanged()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             // Make sure that we have a file name
             if (fileName.Length == 0)
             {

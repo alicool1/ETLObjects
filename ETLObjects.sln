@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ETLObjects", "ETLObjects\ET
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ETLObjectsTest", "ETLObjectsTest\ETLObjectsTest.csproj", "{E18C5029-9FA4-4846-828C-1B42D5D18C3C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ETLObjectsEditor", "ETLObjectsEditor\ETLObjectsEditor.csproj", "{919B68AC-212A-4995-8E21-0CD91702B407}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphEditor", "ETLObjectsEditor\GraphEditor.csproj", "{919B68AC-212A-4995-8E21-0CD91702B407}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -15,7 +15,7 @@ namespace ETLObjects
         public Dictionary<long, Vertex> graph; // Datenstruktur fuer Graph
 
         /// <summary>
-        /// leerer Graph wird angeleg
+        /// leerer Graph wird angelegt
         /// </summary>
         public Graph()
         {

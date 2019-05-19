@@ -152,7 +152,7 @@ namespace ETLObjectsTest
 
                 e7.cost = counter_RowTransformationMany;
 
-                //TestHelper.VisualizeGraph(g);
+                TestHelper.VisualizeGraph(g);
 
                 Assert.AreEqual(4, new ExecuteSQLTask(TestDb.SqlConnection).ExecuteScalar(string.Format("select count(*) from {0}", destObject1)));
                 Assert.AreEqual(8, new ExecuteSQLTask(TestDb.SqlConnection).ExecuteScalar(string.Format("select count(*) from {0}", destObject2)));

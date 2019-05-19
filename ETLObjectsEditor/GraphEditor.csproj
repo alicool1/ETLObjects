@@ -68,7 +68,14 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="ToolboxItemData2.cs" />
     <Compile Include="ToolboxItemData.cs" />
+    <Compile Include="UserControl_Node.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UserControl_Node.Designer.cs">
+      <DependentUpon>UserControl_Node.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -78,11 +85,16 @@
     <None Include="Templates\ETLObjectsEditor.vsdir" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\Bitmap1.bmp" />
-    <Content Include="Resources\Bitmap2.bmp" />
-    <Content Include="Resources\Package.ico" />
-    <Content Include="Resources\ToolboxItem.ico" />
+    <None Include="Resources\401.ico" />
+    <Content Include="Resources\Bitmap1.bmp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Bitmap2.bmp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="Resources\400.ico" />
     <Content Include="stylesheet.css" />
+    <Content Include="ToolboxItemData2.pkgdef" />
     <Content Include="ToolboxItemData.pkgdef" />
   </ItemGroup>
   <ItemGroup>
@@ -198,7 +210,12 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="VsPackage.resx" />
+    <EmbeddedResource Include="UserControl_Node.resx">
+      <DependentUpon>UserControl_Node.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="VsPackage.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
