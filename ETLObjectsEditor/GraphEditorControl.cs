@@ -37,11 +37,8 @@ namespace ETLObjectsEditor
 
             else if (e.Data.GetData(DataFormats.StringFormat).ToString().StartsWith("UserControl_Node"))
             {
-
                 string s = e.Data.GetData(DataFormats.StringFormat).ToString();
-
                 string[] tokens = s.Split('|');
-
                 string GuidString = tokens[1];
 
                 foreach (Control c in this.Controls)
@@ -49,10 +46,8 @@ namespace ETLObjectsEditor
                     if (c.GetType() == typeof(UserControl_Node))
                     {
                         UserControl_Node uc = (UserControl_Node)c;
-
                         if (uc.Guid.ToString() == GuidString)
                         {
-
                             Point newPlace = new Point(
                                   Cursor.Position.X - uc.PointMouseDown.X
                                 , Cursor.Position.Y - uc.PointMouseDown.Y);
@@ -60,12 +55,9 @@ namespace ETLObjectsEditor
                         }
                     }
                 }
-
-
                 // Specify DragDrop result
                 e.Effect = DragDropEffects.Move;
             }
-
         }
     
 
@@ -138,11 +130,8 @@ namespace ETLObjectsEditor
 
             else if (e.Data.GetData(DataFormats.StringFormat).ToString().StartsWith("UserControl_Node"))
             {
-
                 string s = e.Data.GetData(DataFormats.StringFormat).ToString();
-
                 string[] tokens = s.Split('|');
-
                 string GuidString = tokens[1];
 
                 foreach (Control c in this.Controls)
@@ -150,10 +139,8 @@ namespace ETLObjectsEditor
                     if (c.GetType() == typeof(UserControl_Node))
                     {
                         UserControl_Node uc = (UserControl_Node)c;
-                  
                         if (uc.Guid.ToString() == GuidString)
                         {
-
                             Point newPlace = new Point(
                                   Cursor.Position.X - uc.PointMouseDown.X
                                 , Cursor.Position.Y - uc.PointMouseDown.Y);
@@ -161,8 +148,6 @@ namespace ETLObjectsEditor
                         }
                     }
                 }
-
-
                 // Specify DragDrop result
                 e.Effect = DragDropEffects.Move;
             }
