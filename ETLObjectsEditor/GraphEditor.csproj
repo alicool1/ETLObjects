@@ -68,8 +68,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="ToolboxItemData2.cs" />
-    <Compile Include="ToolboxItemData.cs" />
+    <Compile Include="ToolBoxItems\ToolBox_Manager.cs" />
+    <Compile Include="ToolBoxItems\Toolbox_TestItem2.cs" />
+    <Compile Include="ToolBoxItems\Toolbox_TestItem1.cs" />
     <Compile Include="UserControl_Node.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -94,8 +95,8 @@
     </Content>
     <None Include="Resources\400.ico" />
     <Content Include="stylesheet.css" />
-    <Content Include="ToolboxItemData2.pkgdef" />
-    <Content Include="ToolboxItemData.pkgdef" />
+    <Content Include="ToolBoxItems\Toolbox_TestItem2.pkgdef" />
+    <Content Include="ToolBoxItems\Toolbox_TestItem1.pkgdef" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">

@@ -75,9 +75,10 @@ namespace ETLObjectsEditor
             editorControl.TabIndex = 0;
             editorControl.Name = "GraphEditorPane";
 
+            editorControl.TextChanged += new EventHandler(OnTextChange);
+            editorControl.DragDrop += new DragEventHandler(OnDragDrop);
 
 
-            
         }
 
         /// <summary>
@@ -112,12 +113,12 @@ namespace ETLObjectsEditor
                 itemInfo2[0].dwFlags = (uint)__TBXITEMINFOFLAGS.TBXIF_DONTPERSIST;
 
                 toolboxData = new OleDataObject();
-                toolboxData.SetData(typeof(ToolboxItemData), new ToolboxItemData("Test string"));
+                toolboxData.SetData(typeof(Toolbox_TestItem1), new Toolbox_TestItem1("Test string"));
                 ErrorHandler.ThrowOnFailure(toolbox.AddItem(toolboxData, itemInfo1, "GraphML Toolbox"));
                 
 
                 toolboxData = new OleDataObject();
-                toolboxData.SetData(typeof(ToolboxItemData2), new ToolboxItemData2("Test string 2"));
+                toolboxData.SetData(typeof(Toolbox_TestItem2), new Toolbox_TestItem2("Test string 2"));
 
                 ErrorHandler.ThrowOnFailure(toolbox.AddItem(toolboxData, itemInfo2, "GraphML Toolbox"));
 
@@ -587,11 +588,19 @@ namespace ETLObjectsEditor
         {
             GraphEditorPackage.GetProjectName(fileName);
             string s = "";
-            //foreach (Control c in editorControl)
-            //{
-            //    Label l = (Label)c;
-            //    s += l.Location.X + ";" + l.Location.Y + ";" + l.Text + Environment.NewLine;
-            //}
+            foreach (Control c in editorControl.Controls)
+            {
+                if (c.GetType() == typeof(UserControl_Node))
+                {
+                    UserControl_Node x = (UserControl_Node)c;
+                    s += x.Guid + Environment.NewLine;
+                }
+                else
+                {
+                    throw new Exception("unknown control detected while saving");
+                }
+                
+            }
             System.IO.File.WriteAllText(fileName, s);
 
         }
@@ -851,9 +860,9 @@ namespace ETLObjectsEditor
             OleDataObject oleData = new OleDataObject(pDO);
 
             // Check if the data object is of type MyToolboxData.
-            if (oleData.GetDataPresent(typeof(ToolboxItemData)))
+            if (oleData.GetDataPresent(typeof(Toolbox_TestItem1)))
                 return VSConstants.S_OK;
-            if (oleData.GetDataPresent(typeof(ToolboxItemData2)))
+            if (oleData.GetDataPresent(typeof(Toolbox_TestItem2)))
                 return VSConstants.S_OK;
 
             // In all the other cases return S_FALSE
@@ -870,10 +879,10 @@ namespace ETLObjectsEditor
             OleDataObject oleData = new OleDataObject(pDO);
 
             // Check if the picked item is the one we added to the toolbox.
-            if (oleData.GetDataPresent(typeof(ToolboxItemData)))
+            if (oleData.GetDataPresent(typeof(Toolbox_TestItem1)))
             {
                 Debug.WriteLine("MyToolboxItemData selected from the toolbox");
-                ToolboxItemData myData = (ToolboxItemData)oleData.GetData(typeof(ToolboxItemData));
+                Toolbox_TestItem1 myData = (Toolbox_TestItem1)oleData.GetData(typeof(Toolbox_TestItem1));
                 //editorControl.Text += myData.Content;
             }
             return VSConstants.S_OK;
@@ -913,7 +922,26 @@ namespace ETLObjectsEditor
             }
         }
 
-        
+
+        /// <summary>
+        /// Handles the DragDrop event of contained RichTextBox object. 
+        /// Process text changes on drop event.
+        /// </summary>
+        /// <param name="sender">The reference to contained RichTextBox object.</param>
+        /// <param name="e">The event arguments.</param>
+        void OnDragDrop(object sender, DragEventArgs e)
+        {
+            // Check if the picked item is the one we added to the toolbox.
+            if (e.Data.GetDataPresent(typeof(Toolbox_TestItem1)))
+            {
+                Toolbox_TestItem1 myData = (Toolbox_TestItem1)e.Data.GetData(typeof(Toolbox_TestItem1));
+                editorControl.Text += "w";
+
+                // Specify DragDrop result
+                e.Effect = DragDropEffects.Copy;
+            }
+        }
+
 
         #endregion
 

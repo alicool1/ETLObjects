@@ -71,7 +71,7 @@ namespace ETLObjectsEditor
                         //objEditPt.DeleteWhitespace(vsWhitespaceOptions.vsWhitespaceOptionsVertical);
 
                         Console.WriteLine("saving file {0}", document.FullName);
-                        document.Save(document.FullName);
+                        //document.Save(document.FullName);
 
 
 

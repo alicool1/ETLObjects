@@ -24,12 +24,12 @@ namespace ETLObjectsEditor
         private void GraphEditorControl_DragOver(object sender, DragEventArgs e)
         {
             // Check if the picked item is the one we added to the toolbox.
-            if (e.Data.GetDataPresent(typeof(ToolboxItemData)))
+            if (e.Data.GetDataPresent(typeof(Toolbox_TestItem1)))
             {
 
             }
 
-            else if (e.Data.GetDataPresent(typeof(ToolboxItemData2)))
+            else if (e.Data.GetDataPresent(typeof(Toolbox_TestItem2)))
             {
                
             }
@@ -72,12 +72,12 @@ namespace ETLObjectsEditor
         {
             // Check if the source of the drag is the toolbox item
             // created by this sample.
-            if (e.Data.GetDataPresent(typeof(ToolboxItemData)))
+            if (e.Data.GetDataPresent(typeof(Toolbox_TestItem1)))
             {
                 // Only in this case we will enable the drop
                 e.Effect = DragDropEffects.Copy;
             }
-            else if (e.Data.GetDataPresent(typeof(ToolboxItemData2)))
+            else if (e.Data.GetDataPresent(typeof(Toolbox_TestItem2)))
             {
                 // Only in this case we will enable the drop
                 e.Effect = DragDropEffects.Copy;
@@ -97,12 +97,12 @@ namespace ETLObjectsEditor
         void OnDragDrop(object sender, DragEventArgs e)
         {
             // Check if the picked item is the one we added to the toolbox.
-            if (e.Data.GetDataPresent(typeof(ToolboxItemData)))
+            if (e.Data.GetDataPresent(typeof(Toolbox_TestItem1)))
             {
 
                 GraphEditorPackage.PutTextToCS("Console.WriteLine(\"T1\");");
 
-                ToolboxItemData myData = (ToolboxItemData)e.Data.GetData(typeof(ToolboxItemData));
+                Toolbox_TestItem1 myData = (Toolbox_TestItem1)e.Data.GetData(typeof(Toolbox_TestItem1));
 
                 
                 UserControl_Node n = new UserControl_Node("T1");
@@ -114,7 +114,7 @@ namespace ETLObjectsEditor
                 e.Effect = DragDropEffects.Copy;
             }
 
-            else if (e.Data.GetDataPresent(typeof(ToolboxItemData2)))
+            else if (e.Data.GetDataPresent(typeof(Toolbox_TestItem2)))
             {
                 GraphEditorPackage.PutTextToCS("Console.WriteLine(\"T2\");");
 

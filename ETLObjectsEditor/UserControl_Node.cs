@@ -23,7 +23,7 @@ namespace ETLObjectsEditor
         const int MIN_Height = 50;
         const int MIN_Width = 100;
 
-    public UserControl_Node(string s)
+        public UserControl_Node(string s)
         {
             this.BorderStyle = BorderStyle.FixedSingle;
 

@@ -13,10 +13,13 @@ namespace ETLObjects
     public class DataReaderToEnumerable<DS> : IEnumerable<DS>
     {
         /// <summary>
-        /// Enthält den DataReader (bisher nur SQL) des IDataRecords in ein IEnumerable umgewandelt werden soll.
+        /// SQL-DataReader of IDataRecords to be convert to IEnumerable
         /// </summary>
         public SqlDataReader SqlDataReader { get; set; }
 
+        /// <summary>
+        /// Csv-DataReader of IDataRecords to be convert to IEnumerable
+        /// </summary>
         public CsvReader CsvReader  { get; set; }
 
     /// <summary>

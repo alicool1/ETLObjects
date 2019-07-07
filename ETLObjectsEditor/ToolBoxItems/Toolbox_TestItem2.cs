@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace ETLObjectsEditor
 {
     [Serializable()]
-    public class ToolboxItemData2 : ISerializable
+    public class Toolbox_TestItem2 : ISerializable
     {
         #region Fields
         private string content;
@@ -15,7 +15,7 @@ namespace ETLObjectsEditor
         /// Overloaded constructor.
         /// </summary>
         /// <param name="sentence">Sentence value.</param>
-        public ToolboxItemData2(string sentence)
+        public Toolbox_TestItem2(string sentence)
         {
             content = sentence;
         }
@@ -31,7 +31,7 @@ namespace ETLObjectsEditor
         }
         #endregion Properties
 
-        internal ToolboxItemData2(SerializationInfo info, StreamingContext context)
+        internal Toolbox_TestItem2(SerializationInfo info, StreamingContext context)
         {
             content = info.GetValue("Content", typeof(string)) as string;
         }
