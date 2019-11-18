@@ -72,7 +72,7 @@
             this.Controls.Add(this.button1);
             this.Margin = new System.Windows.Forms.Padding(0);
             this.Name = "UserControl_Node";
-            this.Size = new System.Drawing.Size(130, 90);
+            this.Size = new System.Drawing.Size(259, 187);
             this.ResumeLayout(false);
             this.PerformLayout();
 

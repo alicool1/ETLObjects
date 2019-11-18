@@ -15,7 +15,7 @@ namespace ETLObjectsEditor
         public Guid Guid { get; set; }
         public Point PointMouseDown { get; set; }
 
-        int BorderWidth { get; set; } = 3;
+        int BorderWidth { get; set; } = 5;
         Color BorderColor { get; set; } = Color.Gray;
         bool Resizing_Modus { get; set; } = false;
         MousePositionOverBorder Resizing_MousePositionOverBorder { get; set; } = MousePositionOverBorder.no;
@@ -41,25 +41,92 @@ namespace ETLObjectsEditor
 
         private void UserControl_Node_MouseUp(object sender, MouseEventArgs e)
         {
-            Point PointMouseUp = new Point(e.X, e.Y);
+            //Point PointMouseUp = new Point(e.X, e.Y);
             if (Resizing_Modus)
             {
-                ResizeMe(PointMouseUp);
+
+                //ResizeMe(PointMouseUp);
                 Resizing_Modus = false;
             }
         }
         
+        private void ShowCoordinates(Point p)
+        {
+            string text = string.Empty;
+            text += string.Format("p: {0} {1}", p.X, p.Y) + Environment.NewLine;
+            text += string.Format("PointMouseDown: {0} {1}", PointMouseDown.X, PointMouseDown.Y) + Environment.NewLine;
+            text += string.Format("PointToClient(p): {0} {1}", PointToClient(p).X, PointToClient(p).Y) + Environment.NewLine;
+            text += string.Format("PointToScreen(p): {0} {1}", PointToScreen(p).X, PointToScreen(p).Y) + Environment.NewLine;
+
+            label2.Text = text;
+
+        }
+
         private void ResizeMe(Point p)
         {
             int HeightDiff = 0;
+            int WidthDiff = 0;
             int newHeight = 0;
-
+            int newWidth = 0;
 
             HeightDiff = PointMouseDown.Y - p.Y;
-            
+            WidthDiff = PointMouseDown.X - p.X;
+
+            ShowCoordinates(p);
+
 
             switch (Resizing_MousePositionOverBorder)
             {
+                case MousePositionOverBorder.corner_left_top:
+
+                    if (HeightDiff != 0)
+                    {
+                        newHeight = this.Height + HeightDiff;
+                        if (newHeight >= MIN_Height)
+                        {
+                            this.Height = newHeight;
+                            this.Location = new Point(this.Location.X, this.Location.Y - HeightDiff);
+                        }
+                    }
+
+                    if (WidthDiff != 0)
+                    {
+                        newWidth = this.Width + WidthDiff;
+                        if (newWidth >= MIN_Width)
+                        {
+                            this.Width = newWidth;
+                            this.Location = new Point(this.Location.X - WidthDiff, this.Location.Y);
+                        }
+                    }
+                    break;
+
+                case MousePositionOverBorder.corner_left_bottom:
+
+                    PointMouseDown = p;
+                    if (HeightDiff != 0)
+                    {
+                        newHeight = this.Height - HeightDiff;
+                        if (newHeight >= MIN_Height && newHeight != this.Height)
+                        {
+                            this.Height = newHeight;
+                            this.Location = new Point(this.Location.X, this.Location.Y - HeightDiff);
+                        }
+                    }
+
+
+                    if (WidthDiff != 0)
+                    {
+                        newWidth = this.Width + WidthDiff;
+                        if (newWidth >= MIN_Width)
+                        {
+                            this.Width = newWidth;
+                            this.Location = new Point(this.Location.X - WidthDiff, this.Location.Y);
+                        }
+                    }
+
+                    break;
+
+
                 case MousePositionOverBorder.top:
                     if (HeightDiff != 0)
                     {
@@ -79,16 +146,43 @@ namespace ETLObjectsEditor
                         if (newHeight >= MIN_Height && newHeight != this.Height)
                         {
                             this.Height = newHeight;
+     
                         }
                     }
                     break;
+                case MousePositionOverBorder.left:
+                    if (WidthDiff != 0)
+                    {
+                        newWidth = this.Width + WidthDiff;
+                        if (newWidth >= MIN_Width)
+                        {
+                            this.Width = newWidth;
+                            this.Location = new Point(this.Location.X - WidthDiff, this.Location.Y);
+                        }
+                    }
+                    break;
+                case MousePositionOverBorder.right:
+                    PointMouseDown = p;
+                    if (WidthDiff != 0)
+                    {
+                        newWidth = this.Width - WidthDiff;
+                        if (newWidth >= MIN_Width && newWidth != this.Width)
+                        {
+                            this.Width = newWidth;
+                        }
+                    }
+                    break;
+
+
+                
+
             }
 
             this.Refresh();
         }
         private void UserControl_Node_MouseLeave(object sender, EventArgs e)
         {
-            SetBorderColor(Color.Gray);
+            if (!Resizing_Modus) SetBorderColor(Color.Gray);
         }
 
         private void SetBorderColor(Color c)
@@ -96,7 +190,6 @@ namespace ETLObjectsEditor
             if (BorderColor != c)
             {
                 BorderColor = c;
-                this.Refresh();
             }
         }
 
@@ -119,48 +212,42 @@ namespace ETLObjectsEditor
 
         private void UserControl_Node_MouseMove(object sender, MouseEventArgs e)
         {
-
+            SetBorderColor(Color.LightGreen);
             Point PointMouseMove = new Point(e.X, e.Y);
-            
-            if (Resizing_Modus) ResizeMe(PointMouseMove);
 
-            switch (MousePointIsOverBorder(PointMouseMove))
+            if (Resizing_Modus)
+            {
+                ResizeMe(PointMouseMove);
+            }
+
+            if (!Resizing_Modus) switch (MousePointIsOverBorder(PointMouseMove))
             {
                 case MousePositionOverBorder.corner_left_top:
                     System.Windows.Input.Mouse.SetCursor(System.Windows.Input.Cursors.SizeNWSE);
-                    SetBorderColor(Color.LightGreen);
                     break;
                 case MousePositionOverBorder.corner_right_top:
                     System.Windows.Input.Mouse.SetCursor(System.Windows.Input.Cursors.SizeNESW);
-                    SetBorderColor(Color.LightGreen);
                     break;
                 case MousePositionOverBorder.corner_left_bottom:
                     System.Windows.Input.Mouse.SetCursor(System.Windows.Input.Cursors.SizeNESW);
-                    SetBorderColor(Color.LightGreen);
                     break;
                 case MousePositionOverBorder.corner_right_bottom:
                     System.Windows.Input.Mouse.SetCursor(System.Windows.Input.Cursors.SizeNWSE);
-                    SetBorderColor(Color.LightGreen);
                     break;
                 case MousePositionOverBorder.top:
                     System.Windows.Input.Mouse.SetCursor(System.Windows.Input.Cursors.SizeNS);
-                    SetBorderColor(Color.LightGreen);
                     break;
                 case MousePositionOverBorder.bottom:
                     System.Windows.Input.Mouse.SetCursor(System.Windows.Input.Cursors.SizeNS);
-                    SetBorderColor(Color.LightGreen);
                     break;
                 case MousePositionOverBorder.left:
                     System.Windows.Input.Mouse.SetCursor(System.Windows.Input.Cursors.SizeWE);
-                    SetBorderColor(Color.LightGreen);
                     break;
                 case MousePositionOverBorder.right:
                     System.Windows.Input.Mouse.SetCursor(System.Windows.Input.Cursors.SizeWE);
-                    SetBorderColor(Color.LightGreen);
                     break;
                 default:
                     System.Windows.Input.Mouse.SetCursor(System.Windows.Input.Cursors.SizeAll);
-                    SetBorderColor(Color.Gray);
                     break;
 
             }

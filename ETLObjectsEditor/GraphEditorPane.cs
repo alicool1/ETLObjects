@@ -608,16 +608,16 @@ namespace ETLObjectsEditor
         void load(string fileName)
         {
             string[] file = System.IO.File.ReadAllLines(fileName);
-            foreach (string line in file)
-            {
-                string[] tokens = line.Split(';');
-                int x = int.Parse(tokens[0]);
-                int y = int.Parse(tokens[1]);
-                Label l = new Label();
-                l.Text = tokens[2];
-                l.Location = new System.Drawing.Point(x, y);
-                //editorControl.Controls.Add(l);
-            }
+            //foreach (string line in file)
+            //{
+            //    string[] tokens = line.Split(';');
+            //    int x = int.Parse(tokens[0]);
+            //    int y = int.Parse(tokens[1]);
+            //    Label l = new Label();
+            //    l.Text = tokens[2];
+            //    l.Location = new System.Drawing.Point(x, y);
+            //    //editorControl.Controls.Add(l);
+            //}
 
         }
         #endregion
