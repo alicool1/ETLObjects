@@ -79,6 +79,8 @@
     <Compile Include="Algorithms\Graph\Vertex.cs" />
     <Compile Include="Algorithms\IntervalPoint\IntervalPointSearch.cs" />
     <Compile Include="Algorithms\IntervalPoint\IntervalPoint.cs" />
+    <Compile Include="Algorithms\Tree\Node.cs" />
+    <Compile Include="Algorithms\Tree\Tree.cs" />
     <Compile Include="ConnectionManager\IConnectionManager.cs" />
     <Compile Include="ConnectionManager\SqlConnectionManager.cs" />
     <Compile Include="ConnectionManager\TableColumn.cs" />
