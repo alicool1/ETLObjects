@@ -6,16 +6,14 @@ using System.Threading.Tasks;
 
 namespace ETLObjects
 {
-    class Node
+    public class Node
     {
         public int item;
         public Node left;
         public Node right;
-        public void display()
+        public override string ToString()
         {
-            Console.Write("[");
-            Console.Write(item);
-            Console.Write("]");
+            return item.ToString();
         }
     }
 }

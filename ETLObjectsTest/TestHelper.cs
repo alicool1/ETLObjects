@@ -11,6 +11,45 @@ namespace ETLObjectsTest
     public static class TestHelper
     {
 
+        internal static void CheckNode(Node NodeCurrent, Microsoft.Msagl.Drawing.Graph graph)
+        {
+            
+            if (NodeCurrent.left != null)
+            {
+                Microsoft.Msagl.Drawing.Edge msagle_edge = graph.AddEdge(NodeCurrent.ToString(), NodeCurrent.left.ToString());
+                CheckNode(NodeCurrent.left, graph);
+            }
+           
+
+            if (NodeCurrent.right != null)
+            {
+                Microsoft.Msagl.Drawing.Edge msagle_edge = graph.AddEdge(NodeCurrent.ToString(), NodeCurrent.right.ToString());
+                CheckNode(NodeCurrent.right, graph);
+            }
+           
+
+        }
+
+        internal static void VisualizeTree(Tree tree)
+        {
+
+            System.Windows.Forms.Form form = new System.Windows.Forms.Form();
+            Microsoft.Msagl.GraphViewerGdi.GViewer viewer = new Microsoft.Msagl.GraphViewerGdi.GViewer();
+            Microsoft.Msagl.Drawing.Graph graph = new Microsoft.Msagl.Drawing.Graph("graph");
+
+
+            CheckNode(tree.root, graph);
+
+            viewer.Graph = graph;
+            form.SuspendLayout();
+            viewer.Dock = System.Windows.Forms.DockStyle.Fill;
+            form.Controls.Add(viewer);
+            form.ResumeLayout();
+            form.ShowDialog();
+        }
+
+
+
         internal static void VisualizeGraph(Graph gr)
         {
 

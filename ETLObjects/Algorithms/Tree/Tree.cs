@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ETLObjects
 {
-    class Tree
+    public class Tree
     {
         public Node root;
         public Tree()

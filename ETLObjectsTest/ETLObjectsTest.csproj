@@ -66,6 +66,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Algorithms\TestTree.cs" />
     <Compile Include="DataFlow\TestFlowWithBigData.cs" />
     <Compile Include="DataFlow\TestFlowDB2DB.cs" />
     <Compile Include="DataFlow\TestFlowCSV2DB.cs" />
