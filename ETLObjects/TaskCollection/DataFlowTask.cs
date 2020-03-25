@@ -94,7 +94,7 @@ namespace ETLObjects
 
                     // GeneratePipeline_DataFlowSource_to_Transformation
                     // for the case that v_source is type of IDataFlowSource AND v_dest is type of IDataFlowTransformation
-                    else if (new List<Type>(new Type[] { typeof(CSVSource<DS>), typeof(DBSource<DS>) }).Contains(v_source.UserDefinedObjects[0].GetType())
+                    else if (new List<Type>(new Type[] { typeof(CSVSource<DS>), typeof(SqlSource<DS>), typeof(MySqlSource<DS>) }).Contains(v_source.UserDefinedObjects[0].GetType())
                         && new List<Type>(new Type[] { typeof(RowTransformation<DS>), typeof(RowTransformationMany<DS>), typeof(BroadCast<DS>) }).Contains(v_dest.UserDefinedObjects[0].GetType()))
                     {
                         GeneratePipeline_DataFlowSource_to_Transformation(v_source, v_dest, ToCompleteCollection, WatingForCompletitionCollection, DataFlowReaderCollection);
@@ -104,15 +104,15 @@ namespace ETLObjects
                     // GeneratePipeline_Transformation_to_DataFlowDestination
                     // for the case that v_source is type of IDataFlowTransformation AND v_dest is type of IDataFlowDestination
                     else if (new List<Type>(new Type[] { typeof(RowTransformation<DS>), typeof(RowTransformationMany<DS>), typeof(BroadCast<DS>) }).Contains(v_source.UserDefinedObjects[0].GetType())
-                        && new List<Type>(new Type[] { typeof(DBDestination<DS>) }).Contains(v_dest.UserDefinedObjects[0].GetType()))
+                        && new List<Type>(new Type[] { typeof(SqlDestination<DS>), typeof(ListDestination<DS>) }).Contains(v_dest.UserDefinedObjects[0].GetType()))
                     {
                         GeneratePipeline_Transformation_to_DataFlowDestination(v_source, v_dest, ToCompleteCollection, WatingForCompletitionCollection);
                     }
 
                     // GeneratePipeline_DataFlowSource_to_DataFlowDestination
                     // for the case that v_source is type of IDataFlowSource AND v_dest is type of IDataFlowDestination
-                    else if (new List<Type>(new Type[] { typeof(CSVSource<DS>), typeof(DBSource<DS>) }).Contains(v_source.UserDefinedObjects[0].GetType())
-                        && new List<Type>(new Type[] { typeof(DBDestination<DS>) }).Contains(v_dest.UserDefinedObjects[0].GetType()))
+                    else if (new List<Type>(new Type[] { typeof(CSVSource<DS>), typeof(SqlSource<DS>), typeof(MySqlSource<DS>) }).Contains(v_source.UserDefinedObjects[0].GetType())
+                        && new List<Type>(new Type[] { typeof(SqlDestination<DS>), typeof(ListDestination<DS>) }).Contains(v_dest.UserDefinedObjects[0].GetType()))
                     {
                         GeneratePipeline_DataFlowSource_to_DataFlowDestination(v_source, v_dest, ToCompleteCollection, WatingForCompletitionCollection, DataFlowReaderCollection);
                     }

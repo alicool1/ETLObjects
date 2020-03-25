@@ -10,11 +10,7 @@ namespace ETLObjects
     {
         void WriteBatch(DS[] resultList);
 
-        
-        int MaxBufferSize { get; }
-
         int FieldCount { get; set; }
-
 
         EnumerableToDataReader<DS>.ObjectMapping ObjectMappingMethod { get; set; }
     }

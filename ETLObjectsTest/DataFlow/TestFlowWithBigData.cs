@@ -206,13 +206,13 @@ end
                 string Current_InitialCatalog = builder_CurrentDbConnection.InitialCatalog;
                 string Current_DataSource = builder_CurrentDbConnection.DataSource;
 
-                DBSource<Datensatz> DBSource = new DBSource<Datensatz>(TestDb.getNewSqlConnection()
+                SqlSource<Datensatz> DBSource = new SqlSource<Datensatz>(TestDb.getNewSqlConnection()
                     , string.Format("select [Key],F1,F2,F3,F4,F5,F6,F7,F8,F9,F10 from {0}", QuellObjekt)
                     );
                 DBSource.DataMappingMethod = ReaderAdapter.Read;
 
 
-                DBDestination<Datensatz> Ziel_Schreibe = new DBDestination<Datensatz>();
+                SqlDestination<Datensatz> Ziel_Schreibe = new SqlDestination<Datensatz>();
                 Ziel_Schreibe.ObjectName = ZielObjekt;
                 Ziel_Schreibe.FieldCount = FieldCount;
                 Ziel_Schreibe.ObjectMappingMethod = WriterAdapter.Fill;

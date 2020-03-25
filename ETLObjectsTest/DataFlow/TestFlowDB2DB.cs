@@ -79,7 +79,7 @@ namespace ETLObjectsTest.DataFlow
                 string destObject = $"[{destSchema}].[{destTable}]";
                 new DropAndCreateTableTask(TestDb.SqlConnection).Execute(destSchema, destTable, new List<TableColumn>() { Ziel_F0, Ziel_F1, Ziel_F2, Ziel_F3 });
 
-                DBSource<Datensatz> DBSource = new DBSource<Datensatz>(TestDb.getNewSqlConnection()
+                SqlSource<Datensatz> DBSource = new SqlSource<Datensatz>(TestDb.getNewSqlConnection()
                     , "SELECT 0 as F1"
                     + " UNION ALL SELECT 4 as F1"
                     + " UNION ALL SELECT -3 as F1"
@@ -87,7 +87,7 @@ namespace ETLObjectsTest.DataFlow
                     );
                 DBSource.DataMappingMethod = ReaderAdapter.Read;
 
-                DBDestination<Datensatz> destination = new DBDestination<Datensatz>();
+                SqlDestination<Datensatz> destination = new SqlDestination<Datensatz>();
                 destination.ObjectName = destObject;
                 destination.FieldCount = 4;
                 destination.ObjectMappingMethod = WriterAdapter.Fill;

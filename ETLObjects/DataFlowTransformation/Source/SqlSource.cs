@@ -7,12 +7,12 @@ using System.Threading.Tasks.Dataflow;
 using System.Data.SqlClient;
 
 namespace ETLObjects {
-    public class DBSource<DS> : IDataFlowSource<DS>
+    public class SqlSource<DS> : IDataFlowSource<DS>
     {
 
         public SqlConnection SqlConnection { get; set; }
 
-        public DBSource(SqlConnection SqlConnection, string SqlQueryString)
+        public SqlSource(SqlConnection SqlConnection, string SqlQueryString)
         {
             this.SqlConnection = SqlConnection;
             this.SqlQueryString = SqlQueryString;

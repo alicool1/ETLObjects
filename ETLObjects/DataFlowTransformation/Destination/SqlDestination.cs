@@ -8,7 +8,7 @@ using System.Data;
 using System.Data.SqlClient;
 
 namespace ETLObjects {
-    public class DBDestination<DS> : IDataFlowDestination<DS> {
+    public class SqlDestination<DS> : IDataFlowDestination<DS> {
 
         public SqlConnection SqlConnection { get; set; }
 
@@ -21,24 +21,6 @@ namespace ETLObjects {
         public EnumerableToDataReader<DS>.ObjectMapping ObjectMappingMethod { get; set; }
         public int FieldCount { get; set; }
 
-        private int _MaxBufferSize = 10000;
-        public int MaxBufferSize
-        {
-            get
-            {
-                return _MaxBufferSize;
-            }
-            set
-            {
-                if (value > 0)
-                {
-                    _MaxBufferSize = value;
-                }
-            }
-        }
-
-        
-
         public void WriteBatch(DS[] batchData)
         {
             _enumerableToDataReader.EnumarableList = batchData;
@@ -47,15 +29,11 @@ namespace ETLObjects {
 
             new ExecuteSQLTask(SqlConnection).BulkInsert(_enumerableToDataReader, ColumnMapping, ObjectName);
         }
-
-
         public override string ToString()
         {
             return ObjectName;
         }
 
-        
-       
     }
 
 }

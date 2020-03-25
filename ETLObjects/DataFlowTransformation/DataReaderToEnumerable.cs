@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Data.SqlClient;
 using System.Data;
 using CsvHelper;
+using MySql.Data.MySqlClient;
 
 namespace ETLObjects
 {
@@ -16,6 +17,8 @@ namespace ETLObjects
         /// SQL-DataReader of IDataRecords to be convert to IEnumerable
         /// </summary>
         public SqlDataReader SqlDataReader { get; set; }
+
+        public MySqlDataReader MySqlDataReader { get; set; }
 
         /// <summary>
         /// Csv-DataReader of IDataRecords to be convert to IEnumerable
@@ -40,11 +43,23 @@ namespace ETLObjects
         /// <returns></returns>
         IEnumerator<DS> IEnumerable<DS>.GetEnumerator()
         {
-            if (SqlDataReader == null) throw new ArgumentException("Die SqlDataReader-Eigenschaft wurde nicht gesetzt.");
 
-            var x = (from IDataRecord record in SqlDataReader select DataMappingMethod(record));
-            IEnumerator<DS> enusm = x.GetEnumerator();
-            return enusm;
+
+            //if (SqlDataReader == null) throw new ArgumentException("Die SqlDataReader-Eigenschaft wurde nicht gesetzt.");
+
+            if (SqlDataReader != null)
+            {
+                var x = (from IDataRecord record in SqlDataReader select DataMappingMethod(record));
+                IEnumerator<DS> enusm = x.GetEnumerator();
+                return enusm;
+            }
+            else if (MySqlDataReader != null)
+            {
+                var x = (from IDataRecord record in MySqlDataReader select DataMappingMethod(record));
+                IEnumerator<DS> enusm = x.GetEnumerator();
+                return enusm;
+            }
+            throw new ArgumentException("Die DataReader-Eigenschaft wurde nicht gesetzt.");
 
             //if (CsvReader == null) throw new ArgumentException("Die CsvReader-Eigenschaft wurde nicht gesetzt.");
 

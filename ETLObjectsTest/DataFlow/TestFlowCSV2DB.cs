@@ -103,7 +103,7 @@ namespace ETLObjectsTest
                 string destObject1 = $"[{destSchema}].[{destTable1}]";
                 new DropAndCreateTableTask(TestDb.SqlConnection).Execute(destSchema, destTable1, new List<TableColumn>() { keyCol, col1, col2, col3 });
 
-                DBDestination<string[]> destination1 = new DBDestination<string[]>();
+                SqlDestination<string[]> destination1 = new SqlDestination<string[]>();
                 destination1.ObjectName = destObject1;
                 destination1.FieldCount = 4;
                 destination1.ObjectMappingMethod = WriterAdapter.Fill;
@@ -115,7 +115,7 @@ namespace ETLObjectsTest
 
 
 
-                DBDestination<string[]> destination2 = new DBDestination<string[]>();
+                SqlDestination<string[]> destination2 = new SqlDestination<string[]>();
                 destination2.ObjectName = destObject2;
                 destination2.FieldCount = 4;
                 destination2.ObjectMappingMethod = WriterAdapter.Fill;
