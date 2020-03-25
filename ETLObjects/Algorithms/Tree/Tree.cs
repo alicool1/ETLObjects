@@ -6,31 +6,45 @@ using System.Threading.Tasks;
 
 namespace ETLObjects
 {
-    public class Tree
+    public class Tree<T> where T : System.IComparable<T>
     {
-        public Node root;
+        public Node<T> root;
         public Tree()
         {
             root = null;
         }
-        public Node ReturnRoot()
+        public Node<T> ReturnRoot()
         {
             return root;
         }
-        public void Insert(int id)
+
+        public bool LessThan<T>(T a, T b) where T : System.IComparable<T>
         {
-            Node newNode = new Node();
-            newNode.item = id;
+            if (a.GetType() == typeof(string))
+            {
+                return String.Compare(a.ToString(), b.ToString()) < 0 ? true : false;
+
+            }
+            else
+            {
+                throw new Exception("not implemented type.");
+            }
+        }
+
+        public void Insert(T id)
+        {
+            Node<T> newNode = new Node<T>();
+            newNode.SetItem(ref id);
             if (root == null)
                 root = newNode;
             else
             {
-                Node current = root;
-                Node parent;
+                Node<T> current = root;
+                Node<T> parent;
                 while (true)
                 {
                     parent = current;
-                    if (id < current.item)
+                    if (LessThan(id, current.GetItem()))
                     {
                         current = current.left;
                         if (current == null)
@@ -51,31 +65,31 @@ namespace ETLObjects
                 }
             }
         }
-        public void Preorder(Node Root)
+        public void Preorder(Node<T> Root)
         {
             if (Root != null)
             {
-                Console.Write(Root.item + " ");
+                Console.Write(Root.GetItem() + ",");
                 Preorder(Root.left);
                 Preorder(Root.right);
             }
         }
-        public void Inorder(Node Root)
+        public void Inorder(Node<T> Root)
         {
             if (Root != null)
             {
                 Inorder(Root.left);
-                Console.Write(Root.item + " ");
+                Console.Write(Root.GetItem() + ",");
                 Inorder(Root.right);
             }
         }
-        public void Postorder(Node Root)
+        public void Postorder(Node<T> Root)
         {
             if (Root != null)
             {
                 Postorder(Root.left);
                 Postorder(Root.right);
-                Console.Write(Root.item + " ");
+                Console.Write(Root.GetItem() + ",");
             }
         }
     }

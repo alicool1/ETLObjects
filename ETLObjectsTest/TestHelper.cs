@@ -11,7 +11,7 @@ namespace ETLObjectsTest
     public static class TestHelper
     {
 
-        internal static void CheckNode(Node NodeCurrent, Microsoft.Msagl.Drawing.Graph graph)
+        internal static void CheckNode<T>(Node<T> NodeCurrent, Microsoft.Msagl.Drawing.Graph graph)
         {
             
             if (NodeCurrent.left != null)
@@ -30,7 +30,7 @@ namespace ETLObjectsTest
 
         }
 
-        internal static void VisualizeTree(Tree tree)
+        internal static void VisualizeTree<T>(Tree<T> tree) where T : System.IComparable<T>
         {
 
             System.Windows.Forms.Form form = new System.Windows.Forms.Form();

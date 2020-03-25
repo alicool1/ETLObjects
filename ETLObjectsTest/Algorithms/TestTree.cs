@@ -26,11 +26,10 @@ namespace ETLObjectsTest
 
 
         [TestMethod]
-        public void BST()
+        public void BST_TypeOf_Integer()
         {
 
-            Tree BST = new Tree();
-
+            Tree<int> BST = new Tree<int>();
             BST.Insert(30);
             BST.Insert(35);
             BST.Insert(57);
@@ -60,7 +59,47 @@ namespace ETLObjectsTest
 
         }
 
-        
+        [TestMethod]
+        public void BST_TypeOf_String()
+        {
+            int ug = 1;
+
+            int og = 10;
+
+            int mitte = (ug + og) / 2;
+
+            Tree<string> BST = new Tree<string>();
+            BST.Insert("J");
+            BST.Insert("D");
+            BST.Insert("R");
+            BST.Insert("A");
+            BST.Insert("G");
+            BST.Insert("M");
+            BST.Insert("T");
+            BST.Insert("E");
+            BST.Insert("H");
+            BST.Insert("P");
+            BST.Insert("F");
+            BST.Insert("Q");
+
+            TestHelper.VisualizeTree(BST);
+
+            Console.WriteLine("Inorder Traversal : ");
+            BST.Inorder(BST.ReturnRoot());
+            Console.WriteLine(" ");
+            Console.WriteLine();
+            Console.WriteLine("Preorder Traversal : ");
+            BST.Preorder(BST.ReturnRoot());
+            Console.WriteLine(" ");
+            Console.WriteLine();
+            Console.WriteLine("Postorder Traversal : ");
+            BST.Postorder(BST.ReturnRoot());
+            Console.WriteLine(" ");
+
+
+        }
+
+
 
     }
 }

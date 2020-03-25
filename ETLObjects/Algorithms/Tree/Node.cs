@@ -6,11 +6,26 @@ using System.Threading.Tasks;
 
 namespace ETLObjects
 {
-    public class Node
+    public class Node<T>
     {
-        public int item;
-        public Node left;
-        public Node right;
+        private T item;
+        public Node<T> left;
+        public Node<T> right;
+
+
+        public void SetItem(ref T it)
+        {
+            item = it;
+        }
+
+
+        public T GetItem()
+        {
+            return item;
+        }
+
+
+
         public override string ToString()
         {
             return item.ToString();
