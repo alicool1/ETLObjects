@@ -13,7 +13,7 @@ namespace ETLObjects
 {
     public class DataFlowTask<DS>
     {
-
+        DataflowLinkOptions linkOptions = new DataflowLinkOptions { PropagateCompletion = true };
         /* Public properties */
 
         private int BatchSize { get; set; }
@@ -44,16 +44,16 @@ namespace ETLObjects
 
             // the algorithm for topological sorting is required 
             // for the chronological order in the DataFlow-Pipeline
-            InterpreteGraph(WatingForCompletitionCollection, ToCompleteCollection, DataFlowReaderCollection);
+            InterpreteGraph(ref WatingForCompletitionCollection, ref ToCompleteCollection, ref DataFlowReaderCollection);
 
             // begin to read all readers
-            DataFlowReadersExecute(DataFlowReaderCollection);
+            DataFlowReadersExecute(ref DataFlowReaderCollection);
 
             // complete all blocks
-            DataFlowBlockComplete(ToCompleteCollection);
+            DataFlowBlockComplete(ref ToCompleteCollection);
 
             // wait for completition
-            WaitForCompletion(WatingForCompletitionCollection);
+            WaitForCompletion(ref WatingForCompletitionCollection);
         }
 
 
@@ -65,7 +65,7 @@ namespace ETLObjects
         /// <param name="WatingForCompletitionCollection"></param>
         /// <param name="ToCompleteCollection"></param>
         /// <param name="DataFlowReaderCollection"></param>
-        private void InterpreteGraph(List<object> WatingForCompletitionCollection, List<object> ToCompleteCollection, Dictionary<IDataFlowSource<DS>, object> DataFlowReaderCollection)
+        private void InterpreteGraph(ref List<object> WatingForCompletitionCollection, ref List<object> ToCompleteCollection, ref Dictionary<IDataFlowSource<DS>, object> DataFlowReaderCollection)
         {
             // the algorithm for topological sorting is required 
             // for the chronological order in the TPL-DataFlow-Pipeline
@@ -89,7 +89,7 @@ namespace ETLObjects
                     else if (new List<Type>(new Type[] { typeof(RowTransformation<DS>), typeof(RowTransformationMany<DS>), typeof(BroadCast<DS>) }).Contains(v_source.UserDefinedObjects[0].GetType())
                         && new List<Type>(new Type[] { typeof(RowTransformation<DS>), typeof(RowTransformationMany<DS>), typeof(BroadCast<DS>) }).Contains(v_dest.UserDefinedObjects[0].GetType()))
                     {
-                        GeneratePipeline_Transformation_to_Transformation(v_source, v_dest, ToCompleteCollection, WatingForCompletitionCollection);
+                        GeneratePipeline_Transformation_to_Transformation(v_source, v_dest, ref ToCompleteCollection, ref WatingForCompletitionCollection);
                     }
 
                     // GeneratePipeline_DataFlowSource_to_Transformation
@@ -97,7 +97,7 @@ namespace ETLObjects
                     else if (new List<Type>(new Type[] { typeof(CSVSource<DS>), typeof(SqlSource<DS>), typeof(MySqlSource<DS>) }).Contains(v_source.UserDefinedObjects[0].GetType())
                         && new List<Type>(new Type[] { typeof(RowTransformation<DS>), typeof(RowTransformationMany<DS>), typeof(BroadCast<DS>) }).Contains(v_dest.UserDefinedObjects[0].GetType()))
                     {
-                        GeneratePipeline_DataFlowSource_to_Transformation(v_source, v_dest, ToCompleteCollection, WatingForCompletitionCollection, DataFlowReaderCollection);
+                        GeneratePipeline_DataFlowSource_to_Transformation(v_source, v_dest, ref ToCompleteCollection, ref WatingForCompletitionCollection, ref DataFlowReaderCollection);
                     }
 
 
@@ -106,7 +106,7 @@ namespace ETLObjects
                     else if (new List<Type>(new Type[] { typeof(RowTransformation<DS>), typeof(RowTransformationMany<DS>), typeof(BroadCast<DS>) }).Contains(v_source.UserDefinedObjects[0].GetType())
                         && new List<Type>(new Type[] { typeof(SqlDestination<DS>), typeof(ListDestination<DS>) }).Contains(v_dest.UserDefinedObjects[0].GetType()))
                     {
-                        GeneratePipeline_Transformation_to_DataFlowDestination(v_source, v_dest, ToCompleteCollection, WatingForCompletitionCollection);
+                        GeneratePipeline_Transformation_to_DataFlowDestination(v_source, v_dest, ref ToCompleteCollection, ref WatingForCompletitionCollection);
                     }
 
                     // GeneratePipeline_DataFlowSource_to_DataFlowDestination
@@ -114,7 +114,7 @@ namespace ETLObjects
                     else if (new List<Type>(new Type[] { typeof(CSVSource<DS>), typeof(SqlSource<DS>), typeof(MySqlSource<DS>) }).Contains(v_source.UserDefinedObjects[0].GetType())
                         && new List<Type>(new Type[] { typeof(SqlDestination<DS>), typeof(ListDestination<DS>) }).Contains(v_dest.UserDefinedObjects[0].GetType()))
                     {
-                        GeneratePipeline_DataFlowSource_to_DataFlowDestination(v_source, v_dest, ToCompleteCollection, WatingForCompletitionCollection, DataFlowReaderCollection);
+                        GeneratePipeline_DataFlowSource_to_DataFlowDestination(v_source, v_dest, ref ToCompleteCollection, ref WatingForCompletitionCollection, ref DataFlowReaderCollection);
                     }
 
                     else
@@ -134,7 +134,7 @@ namespace ETLObjects
         /// <param name="v_dest"></param>
         /// <param name="ToCompleteCollection"></param>
         /// <param name="WatingForCompletitionCollection"></param>
-        private void GeneratePipeline_Transformation_to_Transformation(Vertex v_source, Vertex v_dest, List<object> ToCompleteCollection, List<object> WatingForCompletitionCollection)
+        private void GeneratePipeline_Transformation_to_Transformation(Vertex v_source, Vertex v_dest, ref List<object> ToCompleteCollection, ref List<object> WatingForCompletitionCollection)
         {
             var t_b_source = (IPropagatorBlock<DS, DS>)v_source.UserDefinedObjects[1];
             var t_b_dest = (IPropagatorBlock<DS, DS>)null;
@@ -167,7 +167,7 @@ namespace ETLObjects
             ToCompleteCollection.Add(t_b_dest);
             v_dest.UserDefinedObjects.Add(t_b_dest);
 
-            t_b_source.LinkTo(t_b_dest);
+            t_b_source.LinkTo(t_b_dest, linkOptions);
             t_b_source.Completion.ContinueWith(t => { t_b_dest.Complete(); });
 
             WatingForCompletitionCollection.Add(t_b_dest);
@@ -184,9 +184,9 @@ namespace ETLObjects
         /// <param name="v_dest"></param>
         /// <param name="ToCompleteCollection"></param>
         /// <param name="WatingForCompletitionCollection"></param>
-        private void GeneratePipeline_DataFlowSource_to_Transformation(Vertex v_source, Vertex v_dest, List<object> ToCompleteCollection, List<object> WatingForCompletitionCollection, Dictionary<IDataFlowSource<DS>, object> DataFlowReaderCollection)
+        private void GeneratePipeline_DataFlowSource_to_Transformation(Vertex v_source, Vertex v_dest, ref List<object> ToCompleteCollection, ref List<object> WatingForCompletitionCollection, ref Dictionary<IDataFlowSource<DS>, object> DataFlowReaderCollection)
         {
-
+            
             var t_b_source = (IDataFlowSource<DS>)v_source.UserDefinedObjects[0];
             var t_b_dest = (IPropagatorBlock<DS, DS>)null;
 
@@ -235,8 +235,8 @@ namespace ETLObjects
         /// <param name="v_dest"></param>
         /// <param name="ToCompleteCollection"></param>
         /// <param name="WatingForCompletitionCollection"></param>
-        private void GeneratePipeline_Transformation_to_DataFlowDestination(Vertex v_source, Vertex v_dest, List<object> ToCompleteCollection, List<object> WatingForCompletitionCollection)
-        {
+        private void GeneratePipeline_Transformation_to_DataFlowDestination(Vertex v_source, Vertex v_dest, ref List<object> ToCompleteCollection, ref List<object> WatingForCompletitionCollection)
+        {           
             var t_b_source = (IPropagatorBlock<DS, DS>)v_source.UserDefinedObjects[1];
             
             IDataFlowDestination<DS> dest = (IDataFlowDestination<DS>)v_dest.UserDefinedObjects[0];
@@ -263,8 +263,8 @@ namespace ETLObjects
                 throw new Exception(string.Format("Not implemented Type {0} in {1}.", v_source.UserDefinedObjects[1].GetType(), CurrentMethodName));
             }
 
-            t_b_source.LinkTo(bacthBlock);
-            bacthBlock.LinkTo(DataFlowDestinationBlock);
+            t_b_source.LinkTo(bacthBlock, linkOptions);
+            bacthBlock.LinkTo(DataFlowDestinationBlock, linkOptions);
 
             t_b_source.Completion.ContinueWith(t => { bacthBlock.Complete(); });
             bacthBlock.Completion.ContinueWith(t => { DataFlowDestinationBlock.Complete(); });
@@ -283,8 +283,8 @@ namespace ETLObjects
         /// <param name="v_dest"></param>
         /// <param name="ToCompleteCollection"></param>
         /// <param name="WatingForCompletitionCollection"></param>
-        private void GeneratePipeline_DataFlowSource_to_DataFlowDestination(Vertex v_source, Vertex v_dest, List<object> ToCompleteCollection, List<object> WatingForCompletitionCollection, Dictionary<IDataFlowSource<DS>, object> DataFlowReaderCollection)
-        {
+        private void GeneratePipeline_DataFlowSource_to_DataFlowDestination(Vertex v_source, Vertex v_dest, ref List<object> ToCompleteCollection, ref List<object> WatingForCompletitionCollection, ref Dictionary<IDataFlowSource<DS>, object> DataFlowReaderCollection)
+        {           
             IDataFlowSource<DS> t_b_source = (IDataFlowSource<DS>)v_source.UserDefinedObjects[0];
             IDataFlowDestination<DS> dest = (IDataFlowDestination<DS>)v_dest.UserDefinedObjects[0];
 
@@ -300,8 +300,8 @@ namespace ETLObjects
 
             var bacthBlock = new BatchBlock<DS>(BatchSize);
             var DataFlowDestinationBlock = new ActionBlock<DS[]>(outp => dest.WriteBatch(outp));
-            t_b_dest.LinkTo(bacthBlock);
-            bacthBlock.LinkTo(DataFlowDestinationBlock);
+            t_b_dest.LinkTo(bacthBlock, linkOptions);
+            bacthBlock.LinkTo(DataFlowDestinationBlock, linkOptions);
 
             t_b_dest.Completion.ContinueWith(t => { bacthBlock.Complete(); });
             bacthBlock.Completion.ContinueWith(t => { DataFlowDestinationBlock.Complete(); });
@@ -312,10 +312,10 @@ namespace ETLObjects
         }
 
 
-        private void DataFlowBlockComplete(List<object> ToCompleteCollection)
-        {
+        private void DataFlowBlockComplete(ref List<object> ToCompleteCollection)
+        {        
             foreach (object o in ToCompleteCollection)
-            {
+            {              
                 NLogger.Info(string.Format("Execute Graph: ToComplete: {0}", o.GetType().Name));
 
 
@@ -332,11 +332,11 @@ namespace ETLObjects
             }
         }
 
-        private void WaitForCompletion(List<object> WatingForCompletitionCollection)
-        {
+        private void WaitForCompletion(ref List<object> WatingForCompletitionCollection)
+        {          
             foreach (object o in WatingForCompletitionCollection)
             {
-
+           
                 NLogger.Info(string.Format("Execute Graph: WatingForCompletition: {0}", o.GetType().Name));
 
                 // for case that type is TransformBlock
@@ -357,9 +357,9 @@ namespace ETLObjects
             }
         }
 
-        private void DataFlowReadersExecute(Dictionary<IDataFlowSource<DS>, object> DataFlowReaderCollection)
+        private void DataFlowReadersExecute(ref Dictionary<IDataFlowSource<DS>, object> DataFlowReaderCollection)
         {
-            foreach(KeyValuePair<IDataFlowSource<DS>, object> kvp in DataFlowReaderCollection)
+            foreach (KeyValuePair<IDataFlowSource<DS>, object> kvp in DataFlowReaderCollection)
             {
                 IDataFlowSource<DS> source = kvp.Key;
                 if (kvp.Value.GetType() == typeof(TransformBlock<DS, DS>))
