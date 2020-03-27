@@ -111,6 +111,7 @@
     <Compile Include="DataFlowTransformation\Broadcast.cs" />
     <Compile Include="DataFlowTransformation\DataReaderToEnumerable.cs" />
     <Compile Include="DataFlowTransformation\Destination\ListDestination.cs" />
+    <Compile Include="DataFlowTransformation\Destination\MySqlDestination.cs" />
     <Compile Include="DataFlowTransformation\Source\MySqlSource.cs" />
     <Compile Include="DataFlowTransformation\Source\SqlSource.cs" />
     <Compile Include="DataFlowTransformation\EnumerableToDataReader.cs" />
@@ -127,7 +128,8 @@
     <Compile Include="TaskCollection\DropTableTask.cs" />
     <Compile Include="TaskCollection\CreateTableTask.cs" />
     <Compile Include="TaskCollection\DataFlowTask.cs" />
-    <Compile Include="TaskCollection\ExecuteSQLTask.cs" />
+    <Compile Include="TaskCollection\ExecuteMySqlTask.cs" />
+    <Compile Include="TaskCollection\ExecuteSqlTask.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="CodeGenerator\DataTypeMapping.xlsx" />

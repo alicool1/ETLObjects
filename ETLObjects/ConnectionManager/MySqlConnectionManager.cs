@@ -23,6 +23,10 @@ namespace ETLObjects
             mySqlConnectionStringBuilder.Database = InitialCatalog;
             mySqlConnectionStringBuilder.Password = Password;
             mySqlConnectionStringBuilder.UserID = UserID;
+            mySqlConnectionStringBuilder.AllowLoadLocalInfile = true;
+            mySqlConnectionStringBuilder.AllowBatch = true;
+            mySqlConnectionStringBuilder.AllowUserVariables = true;
+            mySqlConnectionStringBuilder.AllowZeroDateTime = true;
 
 
             MySqlConnection NewMySqlConnection = new MySqlConnection();
