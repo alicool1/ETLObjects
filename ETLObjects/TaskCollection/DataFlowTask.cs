@@ -164,7 +164,7 @@ namespace ETLObjects
                 string CurrentMethodName = new System.Diagnostics.StackFrame(0, true).GetMethod().Name;
                 throw new Exception(string.Format("Not implemented Type {0} in {1}.", v_dest.UserDefinedObjects[0].GetType(), CurrentMethodName));
             }
-            ToCompleteCollection.Add(t_b_dest);
+            //ToCompleteCollection.Add(t_b_dest); // fuehrte zu Fehlern bei dotnet execute auf linux-system
             v_dest.UserDefinedObjects.Add(t_b_dest);
 
             t_b_source.LinkTo(t_b_dest, linkOptions);
@@ -313,12 +313,12 @@ namespace ETLObjects
 
 
         private void DataFlowBlockComplete(ref List<object> ToCompleteCollection)
-        {        
+        {
             foreach (object o in ToCompleteCollection)
-            {              
+            {               
                 NLogger.Info(string.Format("Execute Graph: ToComplete: {0}", o.GetType().Name));
-
-
+                
+                
                 // for case that type is TransformBlock
                 if (o.GetType() == typeof(TransformBlock<DS, DS>))
                     ((TransformBlock<DS, DS>)o).Complete();
