@@ -288,22 +288,20 @@ namespace ETLObjects
             IDataFlowSource<DS> t_b_source = (IDataFlowSource<DS>)v_source.UserDefinedObjects[0];
             IDataFlowDestination<DS> dest = (IDataFlowDestination<DS>)v_dest.UserDefinedObjects[0];
 
-            RowTransformation<DS> tr = null;
-            TransformBlock<DS, DS> t_b_dest = new TransformBlock<DS, DS>(tr.RowTransformFunction
+            TransformBlock<DS, DS> t_b_dummy = new TransformBlock<DS, DS>(DS => { return DS; }
                 , new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = this.MaxDegreeOfParallelism });
 
-            ToCompleteCollection.Add(t_b_dest);
-            v_dest.UserDefinedObjects.Add(t_b_dest);
-            DataFlowReaderCollection.Add(t_b_source, t_b_dest);
-
+            ToCompleteCollection.Add(t_b_dummy);
+            v_dest.UserDefinedObjects.Add(t_b_dummy);
+            DataFlowReaderCollection.Add(t_b_source, t_b_dummy);
 
 
             var bacthBlock = new BatchBlock<DS>(BatchSize);
             var DataFlowDestinationBlock = new ActionBlock<DS[]>(outp => dest.WriteBatch(outp));
-            t_b_dest.LinkTo(bacthBlock, linkOptions);
+            t_b_dummy.LinkTo(bacthBlock, linkOptions);
             bacthBlock.LinkTo(DataFlowDestinationBlock, linkOptions);
 
-            t_b_dest.Completion.ContinueWith(t => { bacthBlock.Complete(); });
+            t_b_dummy.Completion.ContinueWith(t => { bacthBlock.Complete(); });
             bacthBlock.Completion.ContinueWith(t => { DataFlowDestinationBlock.Complete(); });
 
             WatingForCompletitionCollection.Add(DataFlowDestinationBlock);
