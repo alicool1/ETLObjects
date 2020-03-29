@@ -1,31 +1,13 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ETLObjects;
 using System.Collections.Generic;
-using System.Linq;
 using System.Data;
 using System.Diagnostics;
 
-namespace ETLObjectsTest.DataFlow
+namespace ETLObjectsTest
 {
-    [TestClass]
-    public class TestFlowWithBigData
+    public partial class ETLObjectsTest
     {
-        public TestContext TestContext { get; set; }
-
-        static SqlConnectionManager TestDb = null;
-
-        [ClassInitialize]
-        public static void TestInit(TestContext testContext)
-        {
-
-            string ServerName = testContext.Properties["ServerName"].ToString();
-            string InitialCatalog = testContext.Properties["InitialCatalog"].ToString();
-            TestDb = new SqlConnectionManager(ServerName, InitialCatalog);
-            new CreateSchemaTask(TestDb.SqlConnection).Create("test");
-        }
-
-
 
         public class Datensatz
         {
@@ -139,13 +121,13 @@ namespace ETLObjectsTest.DataFlow
                 int Anzahl_Faktoren = 10;
 
                 string TempObjectNameName = "test.tmp";
-                new DropTableTask(TestDb.SqlConnection).Execute(TempObjectNameName);
+                new DropTableTask(TestDb.getNewSqlConnection()).Execute(TempObjectNameName);
 
                 string QuellSchemaName = "test";
                 string QuellTabelle = "source";
                 string QuellObjekt = $"[{QuellSchemaName}].[{QuellTabelle}]";
 
-                new DropAndCreateTableTask(TestDb.SqlConnection).Execute(QuellSchemaName, QuellTabelle, new List<TableColumn>() {
+                new DropAndCreateTableTask(TestDb.getNewSqlConnection()).Execute(QuellSchemaName, QuellTabelle, new List<TableColumn>() {
                 new TableColumn("Key", SqlDbType.Int, false, true, true),
                 new TableColumn("F1", SqlDbType.Int, true),
                 new TableColumn("F2", SqlDbType.Int, true),
@@ -180,12 +162,12 @@ end
     ;
                 Debug.WriteLine("Generiere Massendaten ... ");
 
-                new ExecuteSQLTask(TestDb.SqlConnection).ExecuteNonQuery(sql_generate_Massendaten);
+                new ExecuteSQLTask(TestDb.getNewSqlConnection()).ExecuteNonQuery(sql_generate_Massendaten);
 
                 string ZielSchemaName = "test";
                 string ZielTabelle = "destination";
                 string ZielObjekt = $"[{ZielSchemaName}].[{ZielTabelle}]";
-                new DropAndCreateTableTask(TestDb.SqlConnection).Execute(ZielSchemaName, ZielTabelle, new List<TableColumn>() {
+                new DropAndCreateTableTask(TestDb.getNewSqlConnection()).Execute(ZielSchemaName, ZielTabelle, new List<TableColumn>() {
 
                new TableColumn("Key", SqlDbType.Int, false, true, true),
                 new TableColumn("F1", SqlDbType.Int, true), new TableColumn("F1_calc", SqlDbType.Int, true),
@@ -202,7 +184,7 @@ end
 
 
                 System.Data.SqlClient.SqlConnectionStringBuilder builder_CurrentDbConnection
-                    = new System.Data.SqlClient.SqlConnectionStringBuilder(TestDb.SqlConnection.ConnectionString);
+                    = new System.Data.SqlClient.SqlConnectionStringBuilder(TestDb.getNewSqlConnection().ConnectionString);
                 string Current_InitialCatalog = builder_CurrentDbConnection.InitialCatalog;
                 string Current_DataSource = builder_CurrentDbConnection.DataSource;
 
@@ -229,28 +211,31 @@ end
                 g.AddEdge(1, 2); // connect 1 to 2
 
 
-                TestHelper.VisualizeGraph(g);
+                //TestHelper.VisualizeGraph(g);
 
 
                 int MaxDegreeOfParallelism = 1;
-                new ExecuteSQLTask(TestDb.SqlConnection).ExecuteNonQuery(string.Format("truncate table {0}", ZielObjekt));
+                new ExecuteSQLTask(TestDb.getNewSqlConnection()).ExecuteNonQuery(string.Format("truncate table {0}", ZielObjekt));
                 Debug.WriteLine("Start Laufzeittest MaxDegreeOfParallelism {0} ... ", MaxDegreeOfParallelism);
                 Stopwatch s = Stopwatch.StartNew();
+                DBSource.SqlConnection = TestDb.getNewSqlConnection();
                 DataFlowTask<Datensatz>.Execute("Test dataflow task", 10000, MaxDegreeOfParallelism, g);
                 Debug.WriteLine("Laufzeit in ms: {0}", s.ElapsedMilliseconds);
 
                 MaxDegreeOfParallelism = 5;
-                new ExecuteSQLTask(TestDb.SqlConnection).ExecuteNonQuery(string.Format("truncate table {0}", ZielObjekt));
+                new ExecuteSQLTask(TestDb.getNewSqlConnection()).ExecuteNonQuery(string.Format("truncate table {0}", ZielObjekt));
                 Debug.WriteLine("Start Laufzeittest MaxDegreeOfParallelism {0} ... ", MaxDegreeOfParallelism);
                 s = Stopwatch.StartNew();
+                DBSource.SqlConnection = TestDb.getNewSqlConnection();
                 DataFlowTask<Datensatz>.Execute("Test dataflow task", 10000, MaxDegreeOfParallelism, g);
                 Debug.WriteLine("Laufzeit in ms: {0}", s.ElapsedMilliseconds);
 
 
                 MaxDegreeOfParallelism = 10;
-                new ExecuteSQLTask(TestDb.SqlConnection).ExecuteNonQuery(string.Format("truncate table {0}", ZielObjekt));
+                new ExecuteSQLTask(TestDb.getNewSqlConnection()).ExecuteNonQuery(string.Format("truncate table {0}", ZielObjekt));
                 Debug.WriteLine("Start Laufzeittest MaxDegreeOfParallelism {0} ... ", MaxDegreeOfParallelism);
                 s = Stopwatch.StartNew();
+                DBSource.SqlConnection = TestDb.getNewSqlConnection();
                 DataFlowTask<Datensatz>.Execute("Test dataflow task", 10000, MaxDegreeOfParallelism, g);
                 Debug.WriteLine("Laufzeit in ms: {0}", s.ElapsedMilliseconds);
 

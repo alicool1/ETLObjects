@@ -8,10 +8,11 @@ using System.Data;
 namespace ETLObjectsTest
 {
     [TestClass]
-    public class TestFlowCSV2DB {
-        public TestContext TestContext { get; set; }
-        
+    public partial class ETLObjectsTest
+    {
+        public TestContext TestContext { get; set; }      
         static SqlConnectionManager TestDb = null;
+        
 
         [ClassInitialize]
         public static void TestInit(TestContext testContext) {
@@ -75,14 +76,14 @@ namespace ETLObjectsTest
             return manyrows;
         }
        
-        public class WriterAdapter
+        public class WriterAdapter_SampleDataflow
         {
-            public static object[] Fill(string[] Datensatz)
+            public static object[] Fill(string[] Datensatz_SampleDataflow)
             {
                 object[] record = new object[4];
-                record[1] = Datensatz[0];
-                record[2] = Datensatz[1];
-                record[3] = Datensatz[2];
+                record[1] = Datensatz_SampleDataflow[0];
+                record[2] = Datensatz_SampleDataflow[1];
+                record[3] = Datensatz_SampleDataflow[2];
                 return record;
             }
         }
@@ -101,24 +102,24 @@ namespace ETLObjectsTest
                 string destSchema = "test";
                 string destTable1 = "Staging1";
                 string destObject1 = $"[{destSchema}].[{destTable1}]";
-                new DropAndCreateTableTask(TestDb.SqlConnection).Execute(destSchema, destTable1, new List<TableColumn>() { keyCol, col1, col2, col3 });
+                new DropAndCreateTableTask(TestDb.getNewSqlConnection()).Execute(destSchema, destTable1, new List<TableColumn>() { keyCol, col1, col2, col3 });
 
                 SqlDestination<string[]> destination1 = new SqlDestination<string[]>();
                 destination1.ObjectName = destObject1;
                 destination1.FieldCount = 4;
-                destination1.ObjectMappingMethod = WriterAdapter.Fill;
+                destination1.ObjectMappingMethod = WriterAdapter_SampleDataflow.Fill;
                 destination1.SqlConnection = TestDb.getNewSqlConnection();
 
                 string destTable2 = "Staging2";
                 string destObject2 = $"[{destSchema}].[{destTable2}]";
-                new DropAndCreateTableTask(TestDb.SqlConnection).Execute(destSchema, destTable2, new List<TableColumn>() { keyCol, col1, col2, col3 });
+                new DropAndCreateTableTask(TestDb.getNewSqlConnection()).Execute(destSchema, destTable2, new List<TableColumn>() { keyCol, col1, col2, col3 });
 
 
 
                 SqlDestination<string[]> destination2 = new SqlDestination<string[]>();
                 destination2.ObjectName = destObject2;
                 destination2.FieldCount = 4;
-                destination2.ObjectMappingMethod = WriterAdapter.Fill;
+                destination2.ObjectMappingMethod = WriterAdapter_SampleDataflow.Fill;
                 destination2.SqlConnection = TestDb.getNewSqlConnection();
 
                 CSVSource<string[]> CSVSource =
@@ -152,10 +153,10 @@ namespace ETLObjectsTest
 
                 e7.cost = counter_RowTransformationMany;
 
-                TestHelper.VisualizeGraph(g);
+                //TestHelper.VisualizeGraph(g);
 
-                Assert.AreEqual(4, new ExecuteSQLTask(TestDb.SqlConnection).ExecuteScalar(string.Format("select count(*) from {0}", destObject1)));
-                Assert.AreEqual(8, new ExecuteSQLTask(TestDb.SqlConnection).ExecuteScalar(string.Format("select count(*) from {0}", destObject2)));
+                Assert.AreEqual(4, new ExecuteSQLTask(TestDb.getNewSqlConnection()).ExecuteScalar(string.Format("select count(*) from {0}", destObject1)));
+                Assert.AreEqual(8, new ExecuteSQLTask(TestDb.getNewSqlConnection()).ExecuteScalar(string.Format("select count(*) from {0}", destObject2)));
 
             }
         }

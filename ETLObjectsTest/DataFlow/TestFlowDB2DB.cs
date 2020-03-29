@@ -6,45 +6,29 @@ using System.Linq;
 using System.Data;
 using System.Data.Common;
 
-namespace ETLObjectsTest.DataFlow
+namespace ETLObjectsTest
 {
-    [TestClass]
-    public class TestFlowDB2DB
+    public partial class ETLObjectsTest
     {
-        public TestContext TestContext { get; set; }
-        static SqlConnectionManager TestDb = null;
-
-        [ClassInitialize]
-        public static void TestInit(TestContext testContext)
-        {
-
-            string ServerName = testContext.Properties["ServerName"].ToString();
-            string InitialCatalog = testContext.Properties["InitialCatalog"].ToString();
-            TestDb = new SqlConnectionManager(ServerName, InitialCatalog);
-            new CreateSchemaTask(TestDb.SqlConnection).Create("test");
-        }
-
-
-
-        public class Datensatz
+        public class Datensatz_DbToDb
         {
             public int F1;
             public int F3;
         }
 
-        public class ReaderAdapter
+        public class ReaderAdapter_DbToDb
         {
-            public static Datensatz Read(IDataRecord record)
+            public static Datensatz_DbToDb Read(IDataRecord record)
             {
-                var Datensatz = new Datensatz();
+                var Datensatz = new Datensatz_DbToDb();
                 Datensatz.F1 = record.GetInt32(0);
                 return Datensatz;
             }
         }
 
-        public class WriterAdapter
+        public class WriterAdapter_DbToDb
         {
-            public static object[] Fill(Datensatz Datensatz)
+            public static object[] Fill(Datensatz_DbToDb Datensatz)
             {
                 object[] record = new object[4];
                 record[1] = Datensatz.F1;
@@ -53,13 +37,13 @@ namespace ETLObjectsTest.DataFlow
             }
         }
 
-        public Datensatz RowTransformationDB(Datensatz row)
+        public Datensatz_DbToDb RowTransformationDB(Datensatz_DbToDb row)
         {
             row.F3 = row.F1 * -1;
             return row;
         }
 
-        public Datensatz RowTransformationDB2(Datensatz row)
+        public Datensatz_DbToDb RowTransformationDB2(Datensatz_DbToDb row)
         {
             row.F3 = row.F3 * -1;
             return row;
@@ -79,26 +63,26 @@ namespace ETLObjectsTest.DataFlow
                 string destObject = $"[{destSchema}].[{destTable}]";
                 new DropAndCreateTableTask(TestDb.SqlConnection).Execute(destSchema, destTable, new List<TableColumn>() { Ziel_F0, Ziel_F1, Ziel_F2, Ziel_F3 });
 
-                SqlSource<Datensatz> DBSource = new SqlSource<Datensatz>(TestDb.getNewSqlConnection()
+                SqlSource<Datensatz_DbToDb> DBSource = new SqlSource<Datensatz_DbToDb>(TestDb.getNewSqlConnection()
                     , "SELECT 0 as F1"
                     + " UNION ALL SELECT 4 as F1"
                     + " UNION ALL SELECT -3 as F1"
                     + " UNION ALL SELECT -2 as F1"
                     );
-                DBSource.DataMappingMethod = ReaderAdapter.Read;
+                DBSource.DataMappingMethod = ReaderAdapter_DbToDb.Read;
 
-                SqlDestination<Datensatz> destination = new SqlDestination<Datensatz>();
+                SqlDestination<Datensatz_DbToDb> destination = new SqlDestination<Datensatz_DbToDb>();
                 destination.ObjectName = destObject;
                 destination.FieldCount = 4;
-                destination.ObjectMappingMethod = WriterAdapter.Fill;
+                destination.ObjectMappingMethod = WriterAdapter_DbToDb.Fill;
                 destination.SqlConnection = TestDb.SqlConnection;
 
 
                 Graph g = new Graph();
 
                 g.GetVertex(0, DBSource);
-                g.GetVertex(1, new RowTransformation<Datensatz>(RowTransformationDB));
-                g.GetVertex(2, new RowTransformation<Datensatz>(RowTransformationDB2));
+                g.GetVertex(1, new RowTransformation<Datensatz_DbToDb>(RowTransformationDB));
+                g.GetVertex(2, new RowTransformation<Datensatz_DbToDb>(RowTransformationDB2));
                 g.GetVertex(3, destination);
 
                 g.AddEdge(0, 1); // connect 0 to 1
@@ -107,9 +91,9 @@ namespace ETLObjectsTest.DataFlow
 
 
 
-                DataFlowTask<Datensatz>.Execute("Test dataflow task", 10000, 1, g);
+                DataFlowTask<Datensatz_DbToDb>.Execute("Test dataflow task", 10000, 1, g);
 
-                TestHelper.VisualizeGraph(g);
+                //TestHelper.VisualizeGraph(g);
 
                 Assert.AreEqual(4, new ExecuteSQLTask(TestDb.SqlConnection).ExecuteScalar(string.Format("select count(*) from {0}", destObject)));
             }

@@ -1,34 +1,23 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ETLObjects;
 using System.Data;
-using MySql.Data.MySqlClient;
-using System.Collections.Generic;
 
-namespace ETLObjectsTest.DataFlow
+namespace ETLObjectsTest
 {
-    [TestClass]
-    public class MySql_to_List
+    public partial class ETLObjectsTest
     {
-        public TestContext TestContext { get; set; }
-        static MySqlConnectionManager MyTestDb = null;
 
-        [ClassInitialize]
-        public static void TestInit(TestContext testContext)
-        {
-            MyTestDb = new MySqlConnectionManager("", "TestDB", "", "");
-        }
-
-        public class Datensatz
+        public class Datensatz_MySql_to_List
         {
             public int Tag;
             public int Monat;
         }
 
-        public class ReaderAdapter
+        public class ReaderAdapter_MySql_to_List
         {
-            public static Datensatz Read(IDataRecord record)
+            public static Datensatz_MySql_to_List Read(IDataRecord record)
             {
-                var Datensatz = new Datensatz();
+                var Datensatz = new Datensatz_MySql_to_List();
                 Datensatz.Tag = record.GetInt32(0);
                 Datensatz.Monat = record.GetInt32(1);
                 return Datensatz;
@@ -36,13 +25,13 @@ namespace ETLObjectsTest.DataFlow
         }
 
 
-        public Datensatz RowTransformationDB(Datensatz row)
+        public Datensatz_MySql_to_List RowTransformationDB(Datensatz_MySql_to_List row)
         {
             row.Tag = row.Tag * -1;
             return row;
         }
 
-        public Datensatz RowTransformationDB2(Datensatz row)
+        public Datensatz_MySql_to_List RowTransformationDB2(Datensatz_MySql_to_List row)
         {
             row.Monat = row.Monat * -1;
             return row;
@@ -51,21 +40,26 @@ namespace ETLObjectsTest.DataFlow
         [TestMethod]
         public void TestDataflow_MySql_to_List()
         {
+            string ServerName = "";
+            if (string.IsNullOrEmpty(ServerName)) return;
+            MySqlConnectionManager MyTestDb = new MySqlConnectionManager(ServerName, "TestDB", "", "");
+            
+
             using (MyTestDb)
             {
                
-                MySqlSource<Datensatz> MySqlDBSource = new MySqlSource<Datensatz>(MyTestDb.getNewMySqlConnection()
+                MySqlSource<Datensatz_MySql_to_List> MySqlDBSource = new MySqlSource<Datensatz_MySql_to_List>(MyTestDb.getNewMySqlConnection()
                     , "SELECT Tag, Monat FROM test"
                     );
-                MySqlDBSource.DataMappingMethod = ReaderAdapter.Read;
+                MySqlDBSource.DataMappingMethod = ReaderAdapter_MySql_to_List.Read;
 
                 ListDestination<Datensatz> destination = new ListDestination<Datensatz>();
 
                 Graph g = new Graph();
 
                 g.GetVertex(0, MySqlDBSource);
-                g.GetVertex(1, new RowTransformation<Datensatz>(RowTransformationDB));
-                g.GetVertex(2, new RowTransformation<Datensatz>(RowTransformationDB2));
+                g.GetVertex(1, new RowTransformation<Datensatz_MySql_to_List>(RowTransformationDB));
+                g.GetVertex(2, new RowTransformation<Datensatz_MySql_to_List>(RowTransformationDB2));
                 g.GetVertex(3, destination);
 
                 g.AddEdge(0, 1); // connect 0 to 1

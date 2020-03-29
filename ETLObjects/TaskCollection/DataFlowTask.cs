@@ -22,11 +22,9 @@ namespace ETLObjects
 
         public Graph g { get; set; }
 
-        NLog.Logger NLogger { get; set; }
-
         public DataFlowTask()
         {
-            NLogger = NLog.LogManager.GetLogger("Default");
+
         }
     
         public DataFlowTask(string name, int batchSize, int MaxDegreeOfParallelism, Graph g) : this()
@@ -94,7 +92,7 @@ namespace ETLObjects
 
                     // GeneratePipeline_DataFlowSource_to_Transformation
                     // for the case that v_source is type of IDataFlowSource AND v_dest is type of IDataFlowTransformation
-                    else if (new List<Type>(new Type[] { typeof(CSVSource<DS>), typeof(SqlSource<DS>), typeof(MySqlSource<DS>) }).Contains(v_source.UserDefinedObjects[0].GetType())
+                    else if (new List<Type>(new Type[] { typeof(CSVSource<DS>), typeof(SqlSource<DS>), typeof(MySqlSource<DS>), typeof(HttpSource<DS>) }).Contains(v_source.UserDefinedObjects[0].GetType())
                         && new List<Type>(new Type[] { typeof(RowTransformation<DS>), typeof(RowTransformationMany<DS>), typeof(BroadCast<DS>) }).Contains(v_dest.UserDefinedObjects[0].GetType()))
                     {
                         GeneratePipeline_DataFlowSource_to_Transformation(v_source, v_dest, ref ToCompleteCollection, ref WatingForCompletitionCollection, ref DataFlowReaderCollection);
@@ -111,7 +109,7 @@ namespace ETLObjects
 
                     // GeneratePipeline_DataFlowSource_to_DataFlowDestination
                     // for the case that v_source is type of IDataFlowSource AND v_dest is type of IDataFlowDestination
-                    else if (new List<Type>(new Type[] { typeof(CSVSource<DS>), typeof(SqlSource<DS>), typeof(MySqlSource<DS>) }).Contains(v_source.UserDefinedObjects[0].GetType())
+                    else if (new List<Type>(new Type[] { typeof(CSVSource<DS>), typeof(SqlSource<DS>), typeof(MySqlSource<DS>), typeof(HttpSource<DS>) }).Contains(v_source.UserDefinedObjects[0].GetType())
                         && new List<Type>(new Type[] { typeof(SqlDestination<DS>), typeof(ListDestination<DS>), typeof(MySqlDestination<DS>) }).Contains(v_dest.UserDefinedObjects[0].GetType()))
                     {
                         GeneratePipeline_DataFlowSource_to_DataFlowDestination(v_source, v_dest, ref ToCompleteCollection, ref WatingForCompletitionCollection, ref DataFlowReaderCollection);
@@ -314,9 +312,6 @@ namespace ETLObjects
         {
             foreach (object o in ToCompleteCollection)
             {               
-                NLogger.Info(string.Format("Execute Graph: ToComplete: {0}", o.GetType().Name));
-                
-                
                 // for case that type is TransformBlock
                 if (o.GetType() == typeof(TransformBlock<DS, DS>))
                     ((TransformBlock<DS, DS>)o).Complete();
@@ -334,9 +329,6 @@ namespace ETLObjects
         {          
             foreach (object o in WatingForCompletitionCollection)
             {
-           
-                NLogger.Info(string.Format("Execute Graph: WatingForCompletition: {0}", o.GetType().Name));
-
                 // for case that type is TransformBlock
                 if (o.GetType() == typeof(TransformBlock<DS, DS>))
                     ((TransformBlock<DS, DS>)o).Completion.Wait();
@@ -351,7 +343,6 @@ namespace ETLObjects
                     ((BroadcastBlock<DS>)o).Completion.Wait();
                 // for case that type is not implemented
                 else throw new Exception(string.Format("Type {0} in WatingForCompletitionCollection is not implemented.", o.GetType()));
-
             }
         }
 

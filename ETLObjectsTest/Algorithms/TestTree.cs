@@ -1,28 +1,11 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ETLObjects;
-using System.Collections.Generic;
-using System.Linq;
-using System.Data;
-using System.Data.Common;
 
 namespace ETLObjectsTest
 {
-    [TestClass]
-    public class TestTree
+    public partial class ETLObjectsTest
     {
-        public TestContext TestContext { get; set; }
-        static SqlConnectionManager TestDb = null;
-
-        [ClassInitialize]
-        public static void TestInit(TestContext testContext)
-        {
-
-            string ServerName = testContext.Properties["ServerName"].ToString();
-            string InitialCatalog = testContext.Properties["InitialCatalog"].ToString();
-            TestDb = new SqlConnectionManager(ServerName, InitialCatalog);
-            new CreateSchemaTask(TestDb.SqlConnection).Create("test");
-        }
 
 
         [TestMethod]
@@ -82,7 +65,7 @@ namespace ETLObjectsTest
             BST.Insert("F");
             BST.Insert("Q");
 
-            TestHelper.VisualizeTree(BST);
+            //TestHelper.VisualizeTree(BST);
 
             Console.WriteLine("Inorder Traversal : ");
             BST.Inorder(BST.ReturnRoot());
@@ -98,7 +81,6 @@ namespace ETLObjectsTest
 
 
         }
-
 
 
     }
