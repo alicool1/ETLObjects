@@ -23,7 +23,10 @@ namespace ETLObjects
             if (a.GetType() == typeof(string))
             {
                 return String.Compare(a.ToString(), b.ToString()) < 0 ? true : false;
-
+            }
+            else if (a.GetType() == typeof(int))
+            {
+                return (int)(object)a < (int)(object)b;
             }
             else
             {
