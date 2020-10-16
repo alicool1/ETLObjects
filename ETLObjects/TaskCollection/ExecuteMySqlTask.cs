@@ -48,7 +48,7 @@ namespace ETLObjects
                 for (int i = 0; i < data.FieldCount; i++)
                 {
                     var o = data.GetValue(i);
-                    sw.Write((i > 0 ? FieldTerminator : string.Empty) + o.ToString());
+                    sw.Write((i > 0 ? FieldTerminator : string.Empty) + (o == null ? string.Empty : o.ToString()));
                 }
                 sw.Write(LineTerminator);
             }

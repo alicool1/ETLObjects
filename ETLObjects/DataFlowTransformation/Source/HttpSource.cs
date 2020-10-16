@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks.Dataflow;
@@ -34,6 +35,10 @@ namespace ETLObjects
 
         private IEnumerable<DS> _dataReaderToEnumerable;
 
+
+        public char[] TokenOpen = new char[] { '<' };
+        public char[] TokenClose = new char[] { '>' };
+
         public async void Read(ITargetBlock<DS> target)
         {
             var readingStream = new HttpClient().GetStreamAsync(Uri);
@@ -47,13 +52,13 @@ namespace ETLObjects
                     string s = Encoding.UTF8.GetString(temp, 0, len);
                     foreach (char c in s)
                     {
-                        if (c == '<')
+                        if (TokenOpen.Contains(c))
                         {
                             await target.SendAsync(DataMappingMethod(token));
                             token = string.Empty;
                         }
                         token += c;
-                        if (c == '>')
+                        if (TokenClose.Contains(c))
                         {
                             await target.SendAsync(DataMappingMethod(token));
                             token = string.Empty;
