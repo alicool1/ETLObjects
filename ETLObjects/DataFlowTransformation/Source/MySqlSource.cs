@@ -34,7 +34,7 @@ namespace ETLObjects {
 
         private MySqlDataReader _reader;
 
-        public async void Read(ITargetBlock<DS> target)
+        public async Task Read(ITargetBlock<DS> target)
         {
             if (DataMappingMethod == null) throw new InvalidOperationException("Fehler: Die DataMappingMethod Eigengschaft wurde nicht gesetzt!");
 

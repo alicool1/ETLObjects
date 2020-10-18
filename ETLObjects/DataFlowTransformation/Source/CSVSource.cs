@@ -54,7 +54,7 @@ namespace ETLObjects {
 
 
 
-        public async void Read(ITargetBlock<DS> target) {
+        public async Task Read(ITargetBlock<DS> target) {
             while (CsvReader.Read()) {
                 string[] line = new string[CsvReader.CurrentRecord.Length];
                 for (int idx = 0; idx < CsvReader.CurrentRecord.Length; idx++)

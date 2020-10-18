@@ -39,19 +39,27 @@ namespace ETLObjects
             List<object> WatingForCompletitionCollection = new List<object>();
             List<object> ToCompleteCollection = new List<object>();
             Dictionary<IDataFlowSource<DS>, object> DataFlowReaderCollection = new Dictionary<IDataFlowSource<DS>, object>();
+            List<Task> TaskCollection = new List<Task>();
 
             // the algorithm for topological sorting is required 
             // for the chronological order in the DataFlow-Pipeline
             InterpreteGraph(ref WatingForCompletitionCollection, ref ToCompleteCollection, ref DataFlowReaderCollection);
 
             // begin to read all readers
-            DataFlowReadersExecute(ref DataFlowReaderCollection);
+            DataFlowReadersExecute(ref DataFlowReaderCollection, ref TaskCollection);
 
             // complete all blocks
             DataFlowBlockComplete(ref ToCompleteCollection);
 
             // wait for completition
             WaitForCompletion(ref WatingForCompletitionCollection);
+
+
+            // throws Exception occourred in TaskCollection
+            foreach (Task t in TaskCollection)
+            {
+                if (t.IsFaulted) throw t.Exception;
+            }
         }
 
 
@@ -304,7 +312,6 @@ namespace ETLObjects
 
             WatingForCompletitionCollection.Add(DataFlowDestinationBlock);
 
-
         }
 
 
@@ -346,22 +353,22 @@ namespace ETLObjects
             }
         }
 
-        private void DataFlowReadersExecute(ref Dictionary<IDataFlowSource<DS>, object> DataFlowReaderCollection)
+        private void DataFlowReadersExecute(ref Dictionary<IDataFlowSource<DS>, object> DataFlowReaderCollection, ref List<Task> TaskCollection)
         {
             foreach (KeyValuePair<IDataFlowSource<DS>, object> kvp in DataFlowReaderCollection)
             {
                 IDataFlowSource<DS> source = kvp.Key;
                 if (kvp.Value.GetType() == typeof(TransformBlock<DS, DS>))
                 {
-                    source.Read((TransformBlock<DS, DS>)kvp.Value); 
+                    TaskCollection.Add(source.Read((TransformBlock<DS, DS>)kvp.Value));                    
                 }
                 else if (kvp.Value.GetType() == typeof(TransformManyBlock<DS, DS>))
                 {
-                    source.Read((TransformManyBlock<DS, DS>)kvp.Value); 
+                    TaskCollection.Add(source.Read((TransformManyBlock<DS, DS>)kvp.Value)); 
                 }
                 else if (kvp.Value.GetType() == typeof(BroadcastBlock<DS>))
                 {
-                    source.Read((BroadcastBlock<DS>)kvp.Value);
+                    TaskCollection.Add(source.Read((BroadcastBlock<DS>)kvp.Value));
                 }
                 else throw new Exception(string.Format("Type {0} in DoDataFlowReaderCollection is not implemented.", kvp.Value.GetType()));
             }

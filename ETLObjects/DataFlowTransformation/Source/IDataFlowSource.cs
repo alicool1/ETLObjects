@@ -11,7 +11,7 @@ namespace ETLObjects
     {
         IEnumerable<DS> EnumerableDataSource { get; }
 
-        void Read(ITargetBlock<DS> TargetBlock);
+        Task Read(ITargetBlock<DS> TargetBlock);
 
 
     }

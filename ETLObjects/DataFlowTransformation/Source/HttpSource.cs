@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 namespace ETLObjects
@@ -39,7 +40,7 @@ namespace ETLObjects
         public char[] TokenOpen = new char[] { '<' };
         public char[] TokenClose = new char[] { '>' };
 
-        public async void Read(ITargetBlock<DS> target)
+        public async Task Read(ITargetBlock<DS> target)
         {
             var readingStream = new HttpClient().GetStreamAsync(Uri);
             using (readingStream)
