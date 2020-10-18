@@ -34,11 +34,11 @@ namespace ETLObjects
             return command.ExecuteScalar();
         }
 
-        public void BulkInsert(IDataReader data, IColumnMappingCollection columnMapping, string tableName)
+        public void BulkInsert(IDataReader data, IColumnMappingCollection columnMapping, string tableName, string FieldTerminator)
         {
 
             string LineTerminator = Environment.NewLine;
-            string FieldTerminator = ";";
+            
 
             string tmpFile = Guid.NewGuid().ToString();
             StreamWriter sw = new StreamWriter(tmpFile);
