@@ -130,7 +130,6 @@
     <None Include="CodeGenerator\DataTypeMapping.xlsx" />
     <None Include="ConnectionManager\ConnectionManager.cd" />
     <None Include="packages.config" />
-    <None Include="TaskCollection\Graph1.dgml" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

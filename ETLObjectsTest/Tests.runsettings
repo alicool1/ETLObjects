@@ -8,6 +8,6 @@
 
   <TestRunParameters>
     <Parameter name="ServerName" value="." />    
-    <Parameter name="InitialCatalog" value="ETLToolbox" />    
+    <Parameter name="InitialCatalog" value="ETLObjects" />    
   </TestRunParameters>
 </RunSettings>

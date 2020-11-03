@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data;
+using System.Reflection;
 
 namespace ETLObjects
 {
@@ -101,7 +102,15 @@ namespace ETLObjects
         public Char GetChar(int i) { throw new NotImplementedException(); }
         public Byte GetByte(int i) { throw new NotImplementedException(); }
         public Boolean GetBoolean(int i) { throw new NotImplementedException(); }
-        public int GetOrdinal(string i) { throw new NotImplementedException(); }
+        public int GetOrdinal(string Feld) {
+
+            FieldInfo[] f = EnumarableList.GetType().GetElementType().GetFields();
+
+            for (int ix = 0; ix < f.Count(); ix++) if (f[ix].Name == Feld) return ix;
+
+            throw new Exception($"Feld {Feld} nicht in EnumarableList bei GetOrdinal() in EnumerableToDataReader gefunden.");
+
+        }
         public Type GetFieldType(int i) { throw new NotImplementedException(); }
         public Int64 GetChars(int i, long dataIndex, char[] buffer, int bufferIndex, int length) { throw new NotImplementedException(); }
         public Int64 GetBytes(int i, long dataIndex, byte[] buffer, int bufferIndex, int length) { throw new NotImplementedException(); }

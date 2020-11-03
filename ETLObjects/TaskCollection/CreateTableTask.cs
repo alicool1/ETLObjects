@@ -31,13 +31,26 @@ namespace ETLObjects
                 ColumnsString += $" {tableColumn.getDataBaseType()}";
 
                 if (tableColumn.IsIdentity) ColumnsString += $" IDENTITY(1, 1)";
-                if (tableColumn.IsPrimaryKeyColumn) ColumnsString += $" PRIMARY KEY";
-
+               
 
                 ColumnsString += $"{(tableColumn.IsNullable ? string.Empty : " NOT")} NULL,";
             }
-
             Sql += ColumnsString;
+
+
+            string PKString = string.Empty;
+            foreach (TableColumn tableColumn in TableColumns)
+            {
+                if (tableColumn.IsPrimaryKeyColumn)
+                {
+                    if (string.IsNullOrEmpty(PKString)) 
+                        PKString += $"PRIMARY KEY ([{tableColumn.Name}]";
+                    else                    
+                        PKString += $",[{tableColumn.Name}]";
+                }
+            }
+            if (!string.IsNullOrEmpty(PKString)) PKString += ")";
+            Sql += PKString;
 
             Sql += Environment.NewLine + $") ON[PRIMARY] end try begin catch end catch";
 
